@@ -1,0 +1,2160 @@
+[
+  {
+    "generic_id": "G01",
+    "generic_name": "Acetaminophen",
+    "class": "Analgesic",
+    "is_orderable": true,
+    "composition": [
+      "Acetaminophen"
+    ],
+    "rules": [
+      {
+        "rule_id": "R01",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 10,
+        "dose_max": 15,
+        "unit": "mg",
+        "max_s_dose": 500,
+        "freq": "QID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P01",
+        "trade_name": "Anti-phen",
+        "is_combo": false,
+        "strength_display": "24",
+        "strength_unit": "mg/mL",
+        "form": "syrup",
+        "calc_concentration": 24,
+        "dispense_unit": "mL"
+      },
+      {
+        "prod_id": "P02",
+        "trade_name": "Acetal",
+        "is_combo": false,
+        "strength_display": "500",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 500,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G02",
+    "generic_name": "Ibuprofen",
+    "class": "Analgesic",
+    "is_orderable": true,
+    "composition": [
+      "Ibuprofen"
+    ],
+    "rules": [
+      {
+        "rule_id": "R02",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 5,
+        "dose_max": 10,
+        "unit": "mg",
+        "max_s_dose": 400,
+        "freq": "QID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P03",
+        "trade_name": "Idofen",
+        "is_combo": false,
+        "strength_display": "20",
+        "strength_unit": "mg/mL",
+        "form": "syrup",
+        "calc_concentration": 20,
+        "dispense_unit": "mL"
+      },
+      {
+        "prod_id": "P04",
+        "trade_name": "Purfen",
+        "is_combo": false,
+        "strength_display": "400",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 400,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G03",
+    "generic_name": "Amoxicillin/clavulanic acid",
+    "class": "Antibiotic",
+    "is_orderable": true,
+    "composition": [
+      "Amoxicillin",
+      "clavulanic acid"
+    ],
+    "rules": [
+      {
+        "rule_id": "R03",
+        "indication": "Standard",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 20,
+        "dose_max": 23,
+        "unit": "mg",
+        "max_s_dose": 875,
+        "freq": "BID"
+      },
+      {
+        "rule_id": "R04",
+        "indication": "High Dose",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 40,
+        "dose_max": 45,
+        "unit": "mg",
+        "max_s_dose": 875,
+        "freq": "BID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P05",
+        "trade_name": "Augmentin",
+        "is_combo": false,
+        "strength_display": "80/11.4",
+        "strength_unit": "mg/mL",
+        "form": "syrup",
+        "calc_concentration": 80,
+        "dispense_unit": "mL"
+      },
+      {
+        "prod_id": "P48",
+        "trade_name": "Curam",
+        "is_combo": false,
+        "strength_display": "875/125",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 875,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G04",
+    "generic_name": "Levocetirizine",
+    "class": "Antihistamine (II)",
+    "is_orderable": true,
+    "composition": [
+      "Levocetirizine"
+    ],
+    "rules": [
+      {
+        "rule_id": "R05",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 5,
+        "calc_mode": "fix",
+        "dose_min": 1.25,
+        "dose_max": 1.25,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "HS"
+      },
+      {
+        "rule_id": "R06",
+        "indication": "General",
+        "min_age": 6,
+        "max_age": 11,
+        "calc_mode": "fix",
+        "dose_min": 2.5,
+        "dose_max": 2.5,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "HS"
+      },
+      {
+        "rule_id": "R07",
+        "indication": "General",
+        "min_age": 12,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 5,
+        "dose_max": 5,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "HS"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P06",
+        "trade_name": "Xyzal",
+        "is_combo": false,
+        "strength_display": "5",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 5,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G05",
+    "generic_name": "Guaifenesin",
+    "class": "Cough and Cold Preparation",
+    "is_orderable": true,
+    "composition": [
+      "Guaifenesin"
+    ],
+    "rules": [
+      {
+        "rule_id": "R08",
+        "indication": "General",
+        "min_age": 2,
+        "max_age": 5,
+        "calc_mode": "fix",
+        "dose_min": 50,
+        "dose_max": 100,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QID"
+      },
+      {
+        "rule_id": "R09",
+        "indication": "General",
+        "min_age": 6,
+        "max_age": 11,
+        "calc_mode": "fix",
+        "dose_min": 100,
+        "dose_max": 200,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QID"
+      },
+      {
+        "rule_id": "R10",
+        "indication": "General",
+        "min_age": 12,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 200,
+        "dose_max": 400,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P07",
+        "trade_name": "Guaphen",
+        "is_combo": false,
+        "strength_display": "20",
+        "strength_unit": "mg/mL",
+        "form": "syrup",
+        "calc_concentration": 20,
+        "dispense_unit": "mL"
+      }
+    ]
+  },
+  {
+    "generic_id": "G06",
+    "generic_name": "Guaifenesin/Methylephedrine/Chlorpheniramine",
+    "class": "Cough and Cold Preparation",
+    "is_orderable": false,
+    "composition": [
+      "Guaifenesin",
+      "Methylephedrine",
+      "Chlorpheniramine"
+    ],
+    "rules": [
+      {
+        "rule_id": "R11",
+        "indication": "General",
+        "min_age": 6,
+        "max_age": 9,
+        "calc_mode": "fix",
+        "dose_min": 6.5,
+        "dose_max": 6.5,
+        "unit": "mL",
+        "max_s_dose": null,
+        "freq": "TID"
+      },
+      {
+        "rule_id": "R12",
+        "indication": "General",
+        "min_age": 9,
+        "max_age": 11,
+        "calc_mode": "fix",
+        "dose_min": 10,
+        "dose_max": 10,
+        "unit": "mL",
+        "max_s_dose": null,
+        "freq": "TID"
+      },
+      {
+        "rule_id": "R13",
+        "indication": "General",
+        "min_age": 12,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 20,
+        "dose_max": 20,
+        "unit": "mL",
+        "max_s_dose": null,
+        "freq": "TID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P08",
+        "trade_name": "Secorine",
+        "is_combo": true,
+        "strength_display": "5/1/0.1",
+        "strength_unit": "mg/mL",
+        "form": "syrup",
+        "calc_concentration": 1,
+        "dispense_unit": "mL"
+      }
+    ]
+  },
+  {
+    "generic_id": "G07",
+    "generic_name": "Ambroxol",
+    "class": "Cough and Cold Preparation",
+    "is_orderable": true,
+    "composition": [
+      "Ambroxol"
+    ],
+    "rules": [
+      {
+        "rule_id": "R14",
+        "indication": "General",
+        "min_age": 2,
+        "max_age": 5,
+        "calc_mode": "fix",
+        "dose_min": 7.5,
+        "dose_max": 15,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "TID"
+      },
+      {
+        "rule_id": "R15",
+        "indication": "General",
+        "min_age": 6,
+        "max_age": 11,
+        "calc_mode": "fix",
+        "dose_min": 15,
+        "dose_max": 30,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "TID"
+      },
+      {
+        "rule_id": "R16",
+        "indication": "General",
+        "min_age": 12,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 20,
+        "dose_max": 40,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "TID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P09",
+        "trade_name": "Ambroxol",
+        "is_combo": false,
+        "strength_display": "30",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 30,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G08",
+    "generic_name": "Azithromycin",
+    "class": "Antibiotic",
+    "is_orderable": true,
+    "composition": [
+      "Azithromycin"
+    ],
+    "rules": [
+      {
+        "rule_id": "R17",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 10,
+        "dose_max": 12,
+        "unit": "mg",
+        "max_s_dose": 500,
+        "freq": "QD"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P10",
+        "trade_name": "Zithromax",
+        "is_combo": false,
+        "strength_display": "250",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 250,
+        "dispense_unit": "tab"
+      },
+      {
+        "prod_id": "P11",
+        "trade_name": "Zithromax",
+        "is_combo": false,
+        "strength_display": "40",
+        "strength_unit": "mg/mL",
+        "form": "suspension",
+        "calc_concentration": 40,
+        "dispense_unit": "mL"
+      }
+    ]
+  },
+  {
+    "generic_id": "G09",
+    "generic_name": "Cefixime",
+    "class": "Antibiotic",
+    "is_orderable": true,
+    "composition": [
+      "Cefixime"
+    ],
+    "rules": [
+      {
+        "rule_id": "R18",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 4,
+        "dose_max": 4,
+        "unit": "mg",
+        "max_s_dose": 200,
+        "freq": "Q12H"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P12",
+        "trade_name": "Ceficin",
+        "is_combo": false,
+        "strength_display": "100",
+        "strength_unit": "mg",
+        "form": "cap",
+        "calc_concentration": 100,
+        "dispense_unit": "cap"
+      }
+    ]
+  },
+  {
+    "generic_id": "G10",
+    "generic_name": "Cephalexin",
+    "class": "Antibiotic",
+    "is_orderable": true,
+    "composition": [
+      "Cephalexin"
+    ],
+    "rules": [
+      {
+        "rule_id": "R19",
+        "indication": "Standard",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 6.25,
+        "dose_max": 12.5,
+        "unit": "mg",
+        "max_s_dose": 500,
+        "freq": "Q6H"
+      },
+      {
+        "rule_id": "R20",
+        "indication": "High Dose",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 18.75,
+        "dose_max": 25,
+        "unit": "mg",
+        "max_s_dose": 1000,
+        "freq": "Q6H"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P13",
+        "trade_name": "Ulexin",
+        "is_combo": false,
+        "strength_display": "25",
+        "strength_unit": "mg/mL",
+        "form": "syrup",
+        "calc_concentration": 25,
+        "dispense_unit": "mL"
+      }
+    ]
+  },
+  {
+    "generic_id": "G11",
+    "generic_name": "Cephradine",
+    "class": "Antibiotic",
+    "is_orderable": true,
+    "composition": [
+      "Cephradine"
+    ],
+    "rules": [
+      {
+        "rule_id": "R21",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 6.25,
+        "dose_max": 12.5,
+        "unit": "mg",
+        "max_s_dose": 500,
+        "freq": "Q6H"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P14",
+        "trade_name": "Unifradine",
+        "is_combo": false,
+        "strength_display": "500",
+        "strength_unit": "mg",
+        "form": "cap",
+        "calc_concentration": 500,
+        "dispense_unit": "cap"
+      }
+    ]
+  },
+  {
+    "generic_id": "G12",
+    "generic_name": "Cetirizine",
+    "class": "Antihistamine (II)",
+    "is_orderable": true,
+    "composition": [
+      "Cetirizine"
+    ],
+    "rules": [
+      {
+        "rule_id": "R22",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 1,
+        "calc_mode": "fix",
+        "dose_min": 2.5,
+        "dose_max": 2.5,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "HS"
+      },
+      {
+        "rule_id": "R23",
+        "indication": "General",
+        "min_age": 2,
+        "max_age": 5,
+        "calc_mode": "fix",
+        "dose_min": 5,
+        "dose_max": 5,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "HS"
+      },
+      {
+        "rule_id": "R24",
+        "indication": "General",
+        "min_age": 6,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 10,
+        "dose_max": 10,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "HS"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P15",
+        "trade_name": "Alltec",
+        "is_combo": false,
+        "strength_display": "10",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 10,
+        "dispense_unit": "tab"
+      },
+      {
+        "prod_id": "P16",
+        "trade_name": "Cetirizine",
+        "is_combo": false,
+        "strength_display": "1",
+        "strength_unit": "mg/mL",
+        "form": "soln",
+        "calc_concentration": 1,
+        "dispense_unit": "mL"
+      }
+    ]
+  },
+  {
+    "generic_id": "G13",
+    "generic_name": "Ciprofloxacin",
+    "class": "Antibiotic",
+    "is_orderable": true,
+    "composition": [
+      "Ciprofloxacin"
+    ],
+    "rules": [
+      {
+        "rule_id": "R25",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 10,
+        "dose_max": 20,
+        "unit": "mg",
+        "max_s_dose": 500,
+        "freq": "Q12H"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P17",
+        "trade_name": "Ciproxin",
+        "is_combo": false,
+        "strength_display": "250",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 250,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G14",
+    "generic_name": "Cyproheptadine",
+    "class": "Antihistamine (I)",
+    "is_orderable": true,
+    "composition": [
+      "Cyproheptadine"
+    ],
+    "rules": [
+      {
+        "rule_id": "R26",
+        "indication": "General",
+        "min_age": 2,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 0.08,
+        "dose_max": 0.08,
+        "unit": "mg",
+        "max_s_dose": 4,
+        "freq": "TID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P18",
+        "trade_name": "Cypromin",
+        "is_combo": false,
+        "strength_display": "0.4",
+        "strength_unit": "mg/mL",
+        "form": "soln",
+        "calc_concentration": 0.4,
+        "dispense_unit": "mL"
+      }
+    ]
+  },
+  {
+    "generic_id": "G15",
+    "generic_name": "Dexamethasone",
+    "class": "Steroids",
+    "is_orderable": true,
+    "composition": [
+      "Dexamethasone"
+    ],
+    "rules": [
+      {
+        "rule_id": "R27",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 0.006,
+        "dose_max": 0.085,
+        "unit": "mg",
+        "max_s_dose": 2,
+        "freq": "QID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P19",
+        "trade_name": "Dexazone",
+        "is_combo": false,
+        "strength_display": "0.5",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 0.5,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G16",
+    "generic_name": "Dexchlorpheniramine",
+    "class": "Antihistamine (I)",
+    "is_orderable": true,
+    "composition": [
+      "Dexchlorpheniramine"
+    ],
+    "rules": [
+      {
+        "rule_id": "R28",
+        "indication": "General",
+        "min_age": 2,
+        "max_age": 5,
+        "calc_mode": "fix",
+        "dose_min": 0.5,
+        "dose_max": 0.5,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QID"
+      },
+      {
+        "rule_id": "R29",
+        "indication": "General",
+        "min_age": 6,
+        "max_age": 11,
+        "calc_mode": "fix",
+        "dose_min": 1,
+        "dose_max": 1,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QID"
+      },
+      {
+        "rule_id": "R30",
+        "indication": "General",
+        "min_age": 12,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 2,
+        "dose_max": 2,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P20",
+        "trade_name": "DEX-CTM",
+        "is_combo": false,
+        "strength_display": "2",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 2,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G17",
+    "generic_name": "Diclofenac",
+    "class": "Analgesic",
+    "is_orderable": true,
+    "composition": [
+      "Diclofenac"
+    ],
+    "rules": [
+      {
+        "rule_id": "R31",
+        "indication": "General",
+        "min_age": 12,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 25,
+        "dose_max": 25,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P21",
+        "trade_name": "Flamquit",
+        "is_combo": false,
+        "strength_display": "25",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 25,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G18",
+    "generic_name": "Dicloxacillin",
+    "class": "Antibiotic",
+    "is_orderable": true,
+    "composition": [
+      "Dicloxacillin"
+    ],
+    "rules": [
+      {
+        "rule_id": "R32",
+        "indication": "Standard",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 6.25,
+        "dose_max": 12.5,
+        "unit": "mg",
+        "max_s_dose": 500,
+        "freq": "Q6H"
+      },
+      {
+        "rule_id": "R33",
+        "indication": "High Dose",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 25,
+        "dose_max": 25,
+        "unit": "mg",
+        "max_s_dose": 500,
+        "freq": "Q6H"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P22",
+        "trade_name": "Ziefmycin",
+        "is_combo": false,
+        "strength_display": "250",
+        "strength_unit": "mg",
+        "form": "cap",
+        "calc_concentration": 250,
+        "dispense_unit": "cap"
+      }
+    ]
+  },
+  {
+    "generic_id": "G19",
+    "generic_name": "Domperidone",
+    "class": "Gastro-intestinal Agents",
+    "is_orderable": true,
+    "composition": [
+      "Domperidone"
+    ],
+    "rules": [
+      {
+        "rule_id": "R34",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 0.3,
+        "dose_max": 0.6,
+        "unit": "mg",
+        "max_s_dose": 10,
+        "freq": "TIDAC"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P23",
+        "trade_name": "Wempty",
+        "is_combo": false,
+        "strength_display": "1",
+        "strength_unit": "mg/mL",
+        "form": "suspension",
+        "calc_concentration": 1,
+        "dispense_unit": "mL"
+      },
+      {
+        "prod_id": "P24",
+        "trade_name": "Motilium",
+        "is_combo": false,
+        "strength_display": "10",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 10,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G20",
+    "generic_name": "Doxycycline",
+    "class": "Antibiotic",
+    "is_orderable": true,
+    "composition": [
+      "Doxycycline"
+    ],
+    "rules": [
+      {
+        "rule_id": "R35",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 1.1,
+        "dose_max": 2.2,
+        "unit": "mg",
+        "max_s_dose": 100,
+        "freq": "Q12H"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P25",
+        "trade_name": "Doxycycline",
+        "is_combo": false,
+        "strength_display": "100",
+        "strength_unit": "mg",
+        "form": "cap",
+        "calc_concentration": 100,
+        "dispense_unit": "cap"
+      }
+    ]
+  },
+  {
+    "generic_id": "G21",
+    "generic_name": "Fusidic acid",
+    "class": "Antibiotic",
+    "is_orderable": true,
+    "composition": [
+      "Fusidic acid"
+    ],
+    "rules": [
+      {
+        "rule_id": "R36",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 4,
+        "calc_mode": "fix",
+        "dose_min": 250,
+        "dose_max": 250,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "TID"
+      },
+      {
+        "rule_id": "R37",
+        "indication": "General",
+        "min_age": 5,
+        "max_age": 11,
+        "calc_mode": "fix",
+        "dose_min": 250,
+        "dose_max": 500,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "TID"
+      },
+      {
+        "rule_id": "R38",
+        "indication": "General",
+        "min_age": 12,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 500,
+        "dose_max": 1000,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "TID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P26",
+        "trade_name": "Fucidin",
+        "is_combo": false,
+        "strength_display": "250",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 250,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G22",
+    "generic_name": "Ketotifen",
+    "class": "Antihistamine (II)",
+    "is_orderable": true,
+    "composition": [
+      "Ketotifen"
+    ],
+    "rules": [
+      {
+        "rule_id": "R39",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 3,
+        "calc_mode": "BW",
+        "dose_min": 0.05,
+        "dose_max": 0.05,
+        "unit": "mg",
+        "max_s_dose": 1,
+        "freq": "BID"
+      },
+      {
+        "rule_id": "R40",
+        "indication": "General",
+        "min_age": 4,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 1,
+        "dose_max": 1,
+        "unit": "mg",
+        "max_s_dose": 1,
+        "freq": "BID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P27",
+        "trade_name": "Asthan",
+        "is_combo": false,
+        "strength_display": "1",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 1,
+        "dispense_unit": "tab"
+      },
+      {
+        "prod_id": "P28",
+        "trade_name": "Asthmin",
+        "is_combo": false,
+        "strength_display": "0.2",
+        "strength_unit": "mg/mL",
+        "form": "syrup",
+        "calc_concentration": 0.2,
+        "dispense_unit": "mL"
+      }
+    ]
+  },
+  {
+    "generic_id": "G23",
+    "generic_name": "Lactulose",
+    "class": "Gastro-intestinal Agents",
+    "is_orderable": true,
+    "composition": [
+      "Lactulose"
+    ],
+    "rules": [
+      {
+        "rule_id": "R41",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 333,
+        "dose_max": 999,
+        "unit": "mg",
+        "max_s_dose": 9999,
+        "freq": "BID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P29",
+        "trade_name": "Lactulose",
+        "is_combo": false,
+        "strength_display": "666",
+        "strength_unit": "mg/mL",
+        "form": "syrup",
+        "calc_concentration": 666,
+        "dispense_unit": "mL"
+      }
+    ]
+  },
+  {
+    "generic_id": "G24",
+    "generic_name": "Loratadine",
+    "class": "Antihistamine (II)",
+    "is_orderable": true,
+    "composition": [
+      "Loratadine"
+    ],
+    "rules": [
+      {
+        "rule_id": "R42",
+        "indication": "General",
+        "min_age": 2,
+        "max_age": 5,
+        "calc_mode": "fix",
+        "dose_min": 5,
+        "dose_max": 5,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "HS"
+      },
+      {
+        "rule_id": "R43",
+        "indication": "General",
+        "min_age": 6,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 10,
+        "dose_max": 10,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "HS"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P30",
+        "trade_name": "Finska",
+        "is_combo": false,
+        "strength_display": "10",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 10,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G25",
+    "generic_name": "Meclizine",
+    "class": "Antihistamine (I)",
+    "is_orderable": true,
+    "composition": [
+      "Meclizine"
+    ],
+    "rules": [
+      {
+        "rule_id": "R44",
+        "indication": "General",
+        "min_age": 12,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 8,
+        "dose_max": 34,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "TID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P31",
+        "trade_name": "Meclizine",
+        "is_combo": false,
+        "strength_display": "25",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 25,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G26",
+    "generic_name": "Metoclopramide",
+    "class": "Gastro-intestinal Agents",
+    "is_orderable": true,
+    "composition": [
+      "Metoclopramide"
+    ],
+    "rules": [
+      {
+        "rule_id": "R45",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 0.1,
+        "dose_max": 0.2,
+        "unit": "mg",
+        "max_s_dose": 10,
+        "freq": "TIDAC"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P32",
+        "trade_name": "Aswell",
+        "is_combo": false,
+        "strength_display": "1",
+        "strength_unit": "mg/mL",
+        "form": "soln",
+        "calc_concentration": 1,
+        "dispense_unit": "mL"
+      },
+      {
+        "prod_id": "P33",
+        "trade_name": "Promeran",
+        "is_combo": false,
+        "strength_display": "3.84",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 3.84,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G27",
+    "generic_name": "Prednisolone",
+    "class": "Steroids",
+    "is_orderable": true,
+    "composition": [
+      "Prednisolone"
+    ],
+    "rules": [
+      {
+        "rule_id": "R46",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 0.5,
+        "dose_max": 1,
+        "unit": "mg",
+        "max_s_dose": 30,
+        "freq": "BID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P34",
+        "trade_name": "Kidsolone",
+        "is_combo": false,
+        "strength_display": "1",
+        "strength_unit": "mg/mL",
+        "form": "soln",
+        "calc_concentration": 1,
+        "dispense_unit": "mL"
+      },
+      {
+        "prod_id": "P35",
+        "trade_name": "Prednisolone",
+        "is_combo": false,
+        "strength_display": "5",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 5,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G28",
+    "generic_name": "Procaterol",
+    "class": "Bronchodilators",
+    "is_orderable": true,
+    "composition": [
+      "Procaterol"
+    ],
+    "rules": [
+      {
+        "rule_id": "R47",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 5,
+        "calc_mode": "BW",
+        "dose_min": 0.00125,
+        "dose_max": 0.00125,
+        "unit": "mg",
+        "max_s_dose": 0.025,
+        "freq": "BID"
+      },
+      {
+        "rule_id": "R48",
+        "indication": "General",
+        "min_age": 6,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 0.025,
+        "dose_max": 0.025,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "BID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P36",
+        "trade_name": "Meptin",
+        "is_combo": false,
+        "strength_display": "5",
+        "strength_unit": "mcg/mL",
+        "form": "liquid",
+        "calc_concentration": 0.005,
+        "dispense_unit": "mL"
+      }
+    ]
+  },
+  {
+    "generic_id": "G29",
+    "generic_name": "Pseudoephedrine",
+    "class": "Cough and Cold Preparation",
+    "is_orderable": true,
+    "composition": [
+      "Pseudoephedrine"
+    ],
+    "rules": [
+      {
+        "rule_id": "R49",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 5,
+        "calc_mode": "BW",
+        "dose_min": 1,
+        "dose_max": 1,
+        "unit": "mg",
+        "max_s_dose": 15,
+        "freq": "QID"
+      },
+      {
+        "rule_id": "R50",
+        "indication": "General",
+        "min_age": 6,
+        "max_age": 11,
+        "calc_mode": "fix",
+        "dose_min": 30,
+        "dose_max": 30,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QID"
+      },
+      {
+        "rule_id": "R51",
+        "indication": "General",
+        "min_age": 12,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 60,
+        "dose_max": 60,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QID"
+      }
+    ],
+    "products": []
+  },
+  {
+    "generic_id": "G30",
+    "generic_name": "Racecadotril",
+    "class": "Gastro-intestinal Agents",
+    "is_orderable": true,
+    "composition": [
+      "Racecadotril"
+    ],
+    "rules": [
+      {
+        "rule_id": "R52",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 1.5,
+        "dose_max": 1.5,
+        "unit": "mg",
+        "max_s_dose": 60,
+        "freq": "TID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P38",
+        "trade_name": "Hidrasec",
+        "is_combo": false,
+        "strength_display": "10",
+        "strength_unit": "mg",
+        "form": "granule",
+        "calc_concentration": 10,
+        "dispense_unit": "pk"
+      }
+    ]
+  },
+  {
+    "generic_id": "G31",
+    "generic_name": "Sennosides",
+    "class": "Gastro-intestinal Agents",
+    "is_orderable": true,
+    "composition": [
+      "Sennosides"
+    ],
+    "rules": [
+      {
+        "rule_id": "R53",
+        "indication": "General",
+        "min_age": 3,
+        "max_age": 5,
+        "calc_mode": "fix",
+        "dose_min": 5,
+        "dose_max": 10,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "HS"
+      },
+      {
+        "rule_id": "R54",
+        "indication": "General",
+        "min_age": 6,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 10,
+        "dose_max": 20,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "HS"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P39",
+        "trade_name": "Through",
+        "is_combo": false,
+        "strength_display": "20",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 20,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G32",
+    "generic_name": "Simethicone",
+    "class": "Gastro-intestinal Agents",
+    "is_orderable": true,
+    "composition": [
+      "Simethicone"
+    ],
+    "rules": [
+      {
+        "rule_id": "R55",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 1,
+        "calc_mode": "fix",
+        "dose_min": 20,
+        "dose_max": 20,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QID"
+      },
+      {
+        "rule_id": "R56",
+        "indication": "General",
+        "min_age": 2,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 40,
+        "dose_max": 40,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P40",
+        "trade_name": "Kascoal",
+        "is_combo": false,
+        "strength_display": "40",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 40,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G33",
+    "generic_name": "Trimethoprim/Sulfamethoxazole",
+    "class": "Antibiotic",
+    "is_orderable": true,
+    "composition": [
+      "Trimethoprim",
+      "Sulfamethoxazole"
+    ],
+    "rules": [
+      {
+        "rule_id": "R57",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 4,
+        "dose_max": 6,
+        "unit": "mg",
+        "max_s_dose": 160,
+        "freq": "Q12H"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P41",
+        "trade_name": "Baktar",
+        "is_combo": false,
+        "strength_display": "400/80",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 80,
+        "dispense_unit": "tab"
+      },
+      {
+        "prod_id": "P42",
+        "trade_name": "Sulfacotrim",
+        "is_combo": false,
+        "strength_display": "40/8",
+        "strength_unit": "mg/mL",
+        "form": "suspension",
+        "calc_concentration": 8,
+        "dispense_unit": "mL"
+      }
+    ]
+  },
+  {
+    "generic_id": "G34",
+    "generic_name": "Amoxicillin",
+    "class": "Antibiotic",
+    "is_orderable": true,
+    "composition": [
+      "Amoxicillin"
+    ],
+    "rules": [
+      {
+        "rule_id": "R58",
+        "indication": "Standard",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 20,
+        "dose_max": 23,
+        "unit": "mg",
+        "max_s_dose": 1000,
+        "freq": "BID"
+      },
+      {
+        "rule_id": "R59",
+        "indication": "High Dose",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 40,
+        "dose_max": 45,
+        "unit": "mg",
+        "max_s_dose": 1000,
+        "freq": "BID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P43",
+        "trade_name": "Amoxicillin",
+        "is_combo": false,
+        "strength_display": "250",
+        "strength_unit": "mg",
+        "form": "cap",
+        "calc_concentration": 250,
+        "dispense_unit": "cap"
+      }
+    ]
+  },
+  {
+    "generic_id": "G35",
+    "generic_name": "Dextromethorphan",
+    "class": "Cough and Cold Preparation",
+    "is_orderable": true,
+    "composition": [
+      "Dextromethorphan"
+    ],
+    "rules": [
+      {
+        "rule_id": "R60",
+        "indication": "General",
+        "min_age": 2,
+        "max_age": 5,
+        "calc_mode": "fix",
+        "dose_min": 5,
+        "dose_max": 5,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QID"
+      },
+      {
+        "rule_id": "R61",
+        "indication": "General",
+        "min_age": 6,
+        "max_age": 11,
+        "calc_mode": "fix",
+        "dose_min": 10,
+        "dose_max": 10,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QID"
+      },
+      {
+        "rule_id": "R62",
+        "indication": "General",
+        "min_age": 12,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 20,
+        "dose_max": 20,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P44",
+        "trade_name": "Delcopan",
+        "is_combo": false,
+        "strength_display": "10",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 10,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G36",
+    "generic_name": "Acetylcysteine",
+    "class": "Cough and Cold Preparation",
+    "is_orderable": true,
+    "composition": [
+      "Acetylcysteine"
+    ],
+    "rules": [
+      {
+        "rule_id": "R63",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 5,
+        "dose_max": 5,
+        "unit": "mg",
+        "max_s_dose": 200,
+        "freq": "TID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P45",
+        "trade_name": "Actein",
+        "is_combo": false,
+        "strength_display": "100",
+        "strength_unit": "mg",
+        "form": "granule",
+        "calc_concentration": 100,
+        "dispense_unit": "pk"
+      },
+      {
+        "prod_id": "P46",
+        "trade_name": "Actein",
+        "is_combo": false,
+        "strength_display": "200",
+        "strength_unit": "mg",
+        "form": "granule",
+        "calc_concentration": 200,
+        "dispense_unit": "pk"
+      }
+    ]
+  },
+  {
+    "generic_id": "G37",
+    "generic_name": "Levofloxacin",
+    "class": "Antibiotic",
+    "is_orderable": true,
+    "composition": [
+      "Levofloxacin"
+    ],
+    "rules": [
+      {
+        "rule_id": "R64",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 4,
+        "calc_mode": "BW",
+        "dose_min": 8,
+        "dose_max": 10,
+        "unit": "mg",
+        "max_s_dose": 375,
+        "freq": "BID"
+      },
+      {
+        "rule_id": "R65",
+        "indication": "General",
+        "min_age": 5,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 8,
+        "dose_max": 10,
+        "unit": "mg",
+        "max_s_dose": 750,
+        "freq": "QD"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P47",
+        "trade_name": "Cravit",
+        "is_combo": false,
+        "strength_display": "500",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 500,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G38",
+    "generic_name": "Cetirizine/Pseudoephedrine",
+    "class": "Cough and Cold Preparation",
+    "is_orderable": false,
+    "composition": [
+      "Cetirizine",
+      "Pseudoephedrine"
+    ],
+    "rules": [
+      {
+        "rule_id": "R66",
+        "indication": "General",
+        "min_age": 12,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 1,
+        "dose_max": 1,
+        "unit": "cap",
+        "max_s_dose": null,
+        "freq": "BID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P49",
+        "trade_name": "Hiros S.R.M",
+        "is_combo": true,
+        "strength_display": "5/120",
+        "strength_unit": "mg",
+        "form": "cap",
+        "calc_concentration": 1,
+        "dispense_unit": "cap"
+      }
+    ]
+  },
+  {
+    "generic_id": "G39",
+    "generic_name": "Brompheniramine/Pseudoephedrine",
+    "class": "Cough and Cold Preparation",
+    "is_orderable": false,
+    "composition": [
+      "Brompheniramine",
+      "Pseudoephedrine"
+    ],
+    "rules": [
+      {
+        "rule_id": "R67",
+        "indication": "General",
+        "min_age": 3,
+        "max_age": 5,
+        "calc_mode": "fix",
+        "dose_min": 0.25,
+        "dose_max": 0.25,
+        "unit": "pk",
+        "max_s_dose": null,
+        "freq": "QID"
+      },
+      {
+        "rule_id": "R68",
+        "indication": "General",
+        "min_age": 6,
+        "max_age": 11,
+        "calc_mode": "fix",
+        "dose_min": 0.5,
+        "dose_max": 0.5,
+        "unit": "pk",
+        "max_s_dose": null,
+        "freq": "QID"
+      },
+      {
+        "rule_id": "R69",
+        "indication": "General",
+        "min_age": 12,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 1,
+        "dose_max": 1,
+        "unit": "pk",
+        "max_s_dose": null,
+        "freq": "QID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P50",
+        "trade_name": "Histapp",
+        "is_combo": true,
+        "strength_display": "4/15",
+        "strength_unit": "mg",
+        "form": "granule",
+        "calc_concentration": 1,
+        "dispense_unit": "pk"
+      }
+    ]
+  },
+  {
+    "generic_id": "G40",
+    "generic_name": "Triprolidine/Pseudoephedrine",
+    "class": "Cough and Cold Preparation",
+    "is_orderable": false,
+    "composition": [
+      "Triprolidine",
+      "Pseudoephedrine"
+    ],
+    "rules": [
+      {
+        "rule_id": "R70",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 1,
+        "calc_mode": "fix",
+        "dose_min": 1.25,
+        "dose_max": 1.25,
+        "unit": "mL",
+        "max_s_dose": null,
+        "freq": "TID"
+      },
+      {
+        "rule_id": "R71",
+        "indication": "General",
+        "min_age": 2,
+        "max_age": 5,
+        "calc_mode": "fix",
+        "dose_min": 2.5,
+        "dose_max": 2.5,
+        "unit": "mL",
+        "max_s_dose": null,
+        "freq": "TID"
+      },
+      {
+        "rule_id": "R72",
+        "indication": "General",
+        "min_age": 6,
+        "max_age": 11,
+        "calc_mode": "fix",
+        "dose_min": 5,
+        "dose_max": 5,
+        "unit": "mL",
+        "max_s_dose": null,
+        "freq": "TID"
+      },
+      {
+        "rule_id": "R73",
+        "indication": "General",
+        "min_age": 12,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 10,
+        "dose_max": 10,
+        "unit": "mL",
+        "max_s_dose": null,
+        "freq": "TID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P51",
+        "trade_name": "Pseu",
+        "is_combo": true,
+        "strength_display": "0.25/6",
+        "strength_unit": "mL",
+        "form": "soln",
+        "calc_concentration": 1,
+        "dispense_unit": "mL"
+      }
+    ]
+  },
+  {
+    "generic_id": "G41",
+    "generic_name": "Dextromethorphan/Cresolsulfonate/Lysozyme",
+    "class": "Cough and Cold Preparation",
+    "is_orderable": false,
+    "composition": [
+      "Dextromethorphan",
+      "Cresolsulfonate",
+      "Lysozyme"
+    ],
+    "rules": [
+      {
+        "rule_id": "R74",
+        "indication": "General",
+        "min_age": 15,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 1,
+        "dose_max": 1,
+        "unit": "cap",
+        "max_s_dose": null,
+        "freq": "TID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P52",
+        "trade_name": "Medika",
+        "is_combo": true,
+        "strength_display": "20/90/20",
+        "strength_unit": "mg",
+        "form": "cap",
+        "calc_concentration": 1,
+        "dispense_unit": "cap"
+      }
+    ]
+  },
+  {
+    "generic_id": "G42",
+    "generic_name": "Dioctahedral Smectite",
+    "class": "Gastro-intestinal Agents",
+    "is_orderable": true,
+    "composition": [
+      "Dioctahedral Smectite"
+    ],
+    "rules": [
+      {
+        "rule_id": "R75",
+        "indication": "General",
+        "min_age": 2,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 3,
+        "dose_max": 3,
+        "unit": "gm",
+        "max_s_dose": null,
+        "freq": "TID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P53",
+        "trade_name": "Smecta",
+        "is_combo": false,
+        "strength_display": "3",
+        "strength_unit": "gm",
+        "form": "granule",
+        "calc_concentration": 1,
+        "dispense_unit": "pk"
+      }
+    ]
+  },
+  {
+    "generic_id": "G43",
+    "generic_name": "Magnesium oxide",
+    "class": "Gastro-intestinal Agents",
+    "is_orderable": true,
+    "composition": [
+      "Magnesium oxide"
+    ],
+    "rules": [
+      {
+        "rule_id": "R76",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 6.25,
+        "dose_max": 6.25,
+        "unit": "mg",
+        "max_s_dose": 250,
+        "freq": "TID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P54",
+        "trade_name": "MgO",
+        "is_combo": false,
+        "strength_display": "250",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 250,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G44",
+    "generic_name": "Butamirate",
+    "class": "Cough and Cold Preparation",
+    "is_orderable": true,
+    "composition": [
+      "Butamirate"
+    ],
+    "rules": [
+      {
+        "rule_id": "R77",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 5,
+        "dose_max": 5,
+        "unit": "mL",
+        "max_s_dose": null,
+        "freq": "TID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P55",
+        "trade_name": "Sutussi",
+        "is_combo": false,
+        "strength_display": "0.8",
+        "strength_unit": "mg/mL",
+        "form": "soln",
+        "calc_concentration": 1,
+        "dispense_unit": "mL"
+      }
+    ]
+  },
+  {
+    "generic_id": "G45",
+    "generic_name": "Montelukast",
+    "class": "Bronchodilators",
+    "is_orderable": true,
+    "composition": [
+      "Montelukast"
+    ],
+    "rules": [
+      {
+        "rule_id": "R78",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 5,
+        "calc_mode": "fix",
+        "dose_min": 4,
+        "dose_max": 4,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QD"
+      },
+      {
+        "rule_id": "R79",
+        "indication": "General",
+        "min_age": 6,
+        "max_age": 14,
+        "calc_mode": "fix",
+        "dose_min": 5,
+        "dose_max": 5,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QD"
+      },
+      {
+        "rule_id": "R80",
+        "indication": "General",
+        "min_age": 15,
+        "max_age": 18,
+        "calc_mode": "fix",
+        "dose_min": 10,
+        "dose_max": 10,
+        "unit": "mg",
+        "max_s_dose": null,
+        "freq": "QD"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P56",
+        "trade_name": "Monkast",
+        "is_combo": false,
+        "strength_display": "4",
+        "strength_unit": "mg",
+        "form": "granule",
+        "calc_concentration": 4,
+        "dispense_unit": "pk"
+      },
+      {
+        "prod_id": "P57",
+        "trade_name": "Monkast",
+        "is_combo": false,
+        "strength_display": "10",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 10,
+        "dispense_unit": "tab"
+      },
+      {
+        "prod_id": "P58",
+        "trade_name": "Singulair",
+        "is_combo": false,
+        "strength_display": "5",
+        "strength_unit": "mg",
+        "form": "tab",
+        "calc_concentration": 5,
+        "dispense_unit": "tab"
+      }
+    ]
+  },
+  {
+    "generic_id": "G46",
+    "generic_name": "Diclofenac supp.",
+    "class": "Analgesic",
+    "is_orderable": true,
+    "composition": [
+      "Diclofenac"
+    ],
+    "rules": [
+      {
+        "rule_id": "R81",
+        "indication": "General",
+        "min_age": 1,
+        "max_age": 18,
+        "calc_mode": "BW",
+        "dose_min": 0.2,
+        "dose_max": 1,
+        "unit": "mg",
+        "max_s_dose": 12.5,
+        "freq": "TID"
+      }
+    ],
+    "products": [
+      {
+        "prod_id": "P59",
+        "trade_name": "Voren",
+        "is_combo": false,
+        "strength_display": "12.5",
+        "strength_unit": "mg",
+        "form": "supp",
+        "calc_concentration": 12.5,
+        "dispense_unit": "supp"
+      }
+    ]
+  }
+]
