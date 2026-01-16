@@ -6,8 +6,6 @@
   <sub>Paediatric Clinical Decision Support System</sub>
 </h1>
 
-<br>
-
 **A fail-safe CDSS providing rapid dosage guidance for junior paediatric practitioners,<br>reducing dosing decision time by up to 90%.**
 
 <br>
