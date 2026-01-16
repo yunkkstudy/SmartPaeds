@@ -6,8 +6,7 @@
 
 ![SmartPaeds Demo](.gif)
 
-## ⚡ Why This Project?
-**SmartPaeds accelerates junior practitioner proficiency by instantly converting theoretical calculations into discrete, clinically usable units (e.g., 5 mL, 0.5 tablet).**
+> **"Transforming theoretical calculations into immediately actionable clinical data."**
 
 ## 🛠 Key Features
 
