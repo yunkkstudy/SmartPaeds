@@ -1,7 +1,12 @@
 <div align="center">
   
-# SmartPaeds
-### Paediatric Clinical Decision Support System
+<h1 align="center">
+  SmartPaeds
+  <br>
+  <sub>Paediatric Clinical Decision Support System</sub>
+</h1>
+
+<br>
 
 **A fail-safe CDSS providing rapid dosage guidance for junior paediatric practitioners,<br>reducing dosing decision time by up to 90%.**
 
