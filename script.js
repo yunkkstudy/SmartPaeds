@@ -1,5 +1,5 @@
 // ==========================================
-// 0. BACKUP DATA (Safety Net)
+// 0. BACKUP DATA (Switch to BACKUP_DATA if fetch fails)
 // ==========================================
 const BACKUP_DATA = [
   {
