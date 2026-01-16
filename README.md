@@ -1,4 +1,4 @@
-#SmartPaeds - Pediatric Clinical Decision Support System
+# SmartPaeds - Pediatric Clinical Decision Support System
 
 > **A fail-safe CDSS providing rapid dosage guidance for junior practitioners, reducing routine time by up to 90%.**
 
