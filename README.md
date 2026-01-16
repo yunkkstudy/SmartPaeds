@@ -1,5 +1,4 @@
 <div align="center">
-
 # SmartPaeds
 ### Paediatric Clinical Decision Support System
 
@@ -9,7 +8,6 @@
 
 [![Live Demo](https://img.shields.io/badge/Demo-Live%20App-blue?style=for-the-badge&logo=vercel)](https://yunkkstudy.github.io/SmartPaeds/)
 
-<br>
 <br>
 
 ![SmartPaeds Demo](demo.gif)
