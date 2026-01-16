@@ -2,6 +2,7 @@
   
 <h1 align="center">
   SmartPaeds
+  <br>
   <sub>Paediatric Clinical Decision Support System</sub>
 </h1>
 
