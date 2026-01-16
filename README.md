@@ -21,7 +21,7 @@
 ## 🛠 Key Features
 
 ### 1. 🧠 Smart Dosing Algorithm 
-* **Beyond Simple Math**: The app doesn't just calculate `10.41 mg`. It snaps results to clinically practical increments (e.g. **0.25, 0.5 tablets**) using a custom grid system.
+* **Beyond Simple Math**: The app doesn't just calculate `5.7mL`. It snaps results to clinically practical increments `5.5mL` using a custom grid system.
 * **Formulation Aware**: Automatically handles rounding logic differently for **Liquid medicine (mL)** vs **Solid Dosage Forms (Tab, Cap, etc.)**.
 
 ### 2. 🛡️ Real-time Safety Auditing
