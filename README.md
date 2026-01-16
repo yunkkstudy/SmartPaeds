@@ -1,8 +1,8 @@
 # SmartPaeds - Pediatric Clinical Decision Support System
 
-> **A fail-safe CDSS providing rapid dosage guidance for junior practitioners, reducing routine time by up to 90%.**
-
 [![Live Demo](https://img.shields.io/badge/Demo-Live%20App-blue?style=for-the-badge)](https://yunkkstudy.github.io/SmartPaeds/) 
+
+> **A fail-safe CDSS providing rapid dosage guidance for junior practitioners, reducing routine time by up to 90%.**
 
 ![SmartPaeds Demo](.gif)
 
