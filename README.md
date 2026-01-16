@@ -12,7 +12,7 @@
 
 ### 1. 🧠 Smart Dosing Algorithm 
 * **Beyond Simple Math**: The app doesn't just calculate `10.41 mg`. It snaps results to clinically practical increments (e.g. **0.25, 0.5 tablets**) using a custom grid system.
-* **Formulation Aware**: Automatically handles rounding logic differently for **Liquid medicine (mL)** vs **Pills**.
+* **Formulation Aware**: Automatically handles rounding logic differently for **Liquid medicine (mL)** vs **Solid Dosage Forms (Tab, Cap, etc.)**.
 
 ### 2. 🛡️ Real-time Safety Auditing
 * **Duplicate Detection**: The system scans active ingredients in real-time. If you select *Anti-phen* and *Acetal* (both Acetaminophen), it instantly triggers a visual alert to prevent overdose.
@@ -27,7 +27,7 @@
 * **Offline-First**: Implements a robust fallback mechanism. If the live JSON fetch fails, it switches to embedded `BACKUP_DATA` to guarantee 100% uptime.
 
 ## 💻 Tech Stack
-* **Frontend**: HTML5,Tailwind CSS, JavaScript
+* **Frontend**: HTML5, Tailwind CSS, JavaScript
 * **Data**: JSON (Relational Data Modeling)
 * **Tools**: SortableJS (Drag & Drop Interface)
 
