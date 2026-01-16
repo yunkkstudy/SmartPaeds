@@ -8,9 +8,7 @@
 
 **A fail-safe CDSS providing rapid dosage guidance for junior paediatric practitioners,<br>reducing dosing decision time by up to 90%.**
 
-[![Live Demo](https://img.shields.io/badge/Demo-Live%20App-blue?style=for-the-badge&logo=vercel)](https://yunkkstudy.github.io/SmartPaeds/)
-
-<br>
+[![Live Demo](https://img.shields.io/badge/Demo-Live%20App-blue?style=for-the-badge&logo=github)](https://yunkkstudy.github.io/SmartPaeds/)
 
 ![SmartPaeds Demo](demo.gif)
 
