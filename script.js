@@ -1,5 +1,1126 @@
+// SmartPaeds - Logic Script 
+// Core functionality including dosage calculation, safety checks, and UI rendering.
+
+// ==========================================
+// 1. DATA SOURCE 
+// ==========================================
+let rawData = [];
+ 
+async function loadDrugData() {
+  try {
+    console.log("Attempting to fetch drugs.json...");
+    const response = await fetch('./drugs.json');
+    
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    // 1. Parse JSON response and store in variable
+    rawData = await response.json();
+    console.log('Successfully loaded data from JSON'); 
+  } catch (error) {
+    console.warn('Network/JSON fetch failed. Switching to BACKUP_DATA.', error);   
+    // 2. [Fallback] Switch to BACKUP_DATA if fetch fails
+    if (typeof BACKUP_DATA !== 'undefined') {
+        rawData = BACKUP_DATA;
+        alert("Network unstable. Using offline data mode.");
+    } else {
+        console.error("Critical: BACKUP_DATA is missing!");
+    }
+    
+  } finally {
+    // 3. Initialization: Execute regardless of data source (Fetch or Backup)
+    if (rawData && rawData.length > 0) {
+        DB.init(); 
+        Render.updateAll();
+        console.log("App initialized successfully.");
+    } else {
+        alert("Critical Error: No data available (Network & Backup both failed).");
+    }
+  }
+}
+
+loadDrugData();
+
+// ==========================================
+// 2_1 CONFIG & UTILS
+// ==========================================
+const CONFIG = {
+  SLOTS: ["A", "B", "C", "D"]
+};
+
+const Utils = {
+  // 1. Sanitize inputs to prevent Cross-Site Scripting (XSS)
+  escape: (str) => {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  },
+
+  // 2. Safely parse numerical input
+  parseNum: (val) => {
+    const n = parseFloat(val);
+    return isNaN(n) ? 0 : n;
+  },
+
+  // 3. Generate Ingredient Map (Core Logic: Duplicate Detection)
+  // Transforms selected items into a map keyed by ingredient name.
+  getIngredientMap: (selectedItems) => {
+    const map = {};
+    selectedItems.forEach((item) => {
+      // Ensure composition is an array to prevent runtime errors
+      const list = item.composition || [];
+
+      // Construct display name: Trade Name (Form) Strength
+      let displayName = item.trade_name || item.generic_name;
+      
+      if (item.type === "trade") {
+        // Use standardized 'tradeType' from DB layer for consistency
+        const formStr = item.tradeType || item.form || ""; 
+        if (formStr) displayName += ` (${formStr})`;
+        
+        // Append strength info if available
+        if (item.strengthNum) displayName += ` ${item.strengthNum}${item.strengthUnit || ''}`;
+      }
+      
+      // Group by ingredient name (Key) to identify duplicates
+      list.forEach((ing) => {
+        if (!map[ing]) map[ing] = [];
+        map[ing].push({
+            id: item.uniqueKey,
+            name: displayName
+        });
+      });
+    });
+    return map;
+  }
+};
+
+// ==========================================
+// 2_2 ICON ASSETS (SVG)
+// ==========================================
+
+// Storing SVGs inline to reduce HTTP requests and improve loading performance.
+const DrugIcons = {
+  tablet: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="9" rx="10" ry="6"></ellipse><path d="M2 9 v4 A 10 6 0 0 0 22 16 v-4"></path><path d="M6 12 L18 6"></path></svg>`,
+  capsule: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g transform="rotate(-45 12 12)"><rect x="1" y="7" width="22" height="10" rx="5" ry="5"></rect><path d="M12 7v10"></path></g></svg>`,
+  bottle: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5 L7 21 L17 21 L20 5"></path><path d="M5.3 12 C 8 10, 11 14, 13 12 S 16 10, 18.7 12 L 17 21 L 7 21 Z"></path></svg>`,
+  suppository: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21 h6 Q 17 21 17 19 v-7 C 17 7 15 2 12 2 C 9 2 7 7 7 12 v7 Q 7 21 9 21 z"></path></svg>`,
+  granule: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g transform="rotate(-45 12 12)"><path d="M4 12 L4 7 L20 7 L20 17 L12 17"></path><path d="M3 17v0 M6 18v0 M1 19v0 M9 19v0 M4 20v0 M5 16v0 M8 17v0 M8 14v0 M11 13v0 M14 13v0 M17 12v0"></path></g></svg>`,
+  alert: `<svg class="w-5 h-5 text-red-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`,
+  default: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>`,
+
+  // Generates HTML string for the icon based on drug form.
+  // Uses fuzzy matching to handle various data formats (e.g., "Syrup", "Susp").
+  getHtml: (typeStr) => {
+    if (!typeStr) return "";
+    const t = typeStr.toLowerCase().trim();
+    const safeTitle = Utils.escape(typeStr);  // Use Utils.escape for title attribute to prevent XSS
+    
+    if (t.includes("syrup") || t.includes("susp") || t.includes("sol") || t.includes("liq")) {
+      return `<span class="text-teal-500 shrink-0" title="${typeStr}">${DrugIcons.bottle}</span>`;
+    }
+    if (t.includes("cap")) {
+      return `<span class="text-indigo-500 shrink-0" title="${typeStr}">${DrugIcons.capsule}</span>`;
+    }
+    if (t.includes("tab") || t.includes("pill")) {
+      return `<span class="text-indigo-500 shrink-0" title="${typeStr}">${DrugIcons.tablet}</span>`;
+    }
+    if (t.includes("granule") || t.includes("pk") || t.includes("powd")) {
+      return `<span class="text-orange-500 shrink-0" title="${typeStr}">${DrugIcons.granule}</span>`;
+    }
+    if (t.includes("supp")) {
+      return `<span class="text-purple-500 shrink-0" title="${typeStr}">${DrugIcons.suppository}</span>`;
+    }
+    return `<span class="text-gray-400 shrink-0" title="${typeStr}">${DrugIcons.default}</span>`;
+  }
+};
+
+// ==========================================
+// 3. DATABASE CORE 
+// ==========================================
+const DB = {
+  // 1. State Definitions
+  map: new Map(),
+  searchList: [],
+
+  // 2. Init methods
+  // Transforms hierarchical rawData into linear structures for efficiency
+  init: function() {
+    this.map.clear();
+    this.searchList.length = 0;
+
+    rawData.forEach((gen) => {
+      // A. Process Generic Item
+      const genericItem = {
+        ...gen,
+        type: "generic",
+        uniqueKey: gen.generic_id,
+        label: gen.generic_name
+      };
+      
+      // Store full object in Map
+      this.map.set(gen.generic_id, genericItem);
+      
+      // Push lightweight object to searchList
+      this.searchList.push({
+        uniqueKey: gen.generic_id,
+        label: gen.generic_name,
+        sub: gen.generic_name,
+        type: "generic",
+        classType: gen.class || "Others",
+        searchStr: (gen.generic_name || "").toLowerCase(),
+        tradeType: "",
+        strengthNum: "",
+        strengthUnit: "",
+        // Default to true if is_orderable is undefined
+        isOrderable: typeof gen.is_orderable !== "undefined" ? gen.is_orderable : true,
+        isCombo: gen.composition && gen.composition.length > 1,
+        components: gen.composition || []
+      });
+
+      // B. Process Associated Products (Trade Items)
+      if (gen.products && gen.products.length > 0) {
+        gen.products.forEach((prod) => {
+          const tradeItem = {
+            ...prod,
+            type: "trade",
+            uniqueKey: prod.prod_id,
+            label: prod.trade_name,
+            tradeType: prod.form,
+            parent: genericItem, // Link to parent for accessing calculation rules
+            composition: gen.composition,
+            strengthNum: prod.strength_display,
+            strengthUnit: prod.strength_unit
+          };
+          
+          this.map.set(prod.prod_id, tradeItem); 
+          
+          this.searchList.push({ 
+            uniqueKey: prod.prod_id,
+            label: prod.trade_name,
+            sub: gen.generic_name,
+            type: "trade",
+            classType: gen.class || "Others", // Combine Trade Name and Generic Name for comprehensive search
+            searchStr: `${prod.trade_name} ${gen.generic_name}`.toLowerCase(),
+            tradeType: prod.form,
+            strengthNum: prod.strength_display,
+            strengthUnit: prod.strength_unit,
+            isCombo: prod.is_combo,
+            components: gen.composition || [],
+            parent: genericItem
+          });
+        });
+      }
+    });
+
+    // Sorting: Generics first, then alphabetical by Label
+    this.searchList.sort((a, b) => {
+      if (a.type !== b.type) return a.type === "generic" ? -1 : 1;
+      return a.label.localeCompare(b.label);
+    });
+    
+    console.log(`DB Initialized. Total items: ${this.searchList.length}`);
+  },
+
+  // 3. Retrieval Methods
+  get: function(key) {
+    return this.map.get(key); 
+  },
+
+  search: function(term) {
+    if (!term) return this.searchList; 
+    const lowerTerm = term.toLowerCase();
+    return this.searchList.filter((i) => i.searchStr.includes(lowerTerm));
+  }
+}; 
+
+// ==========================================
+// 4. CALCULATION ENGINE
+// ==========================================
+const Calculator = {
+  // [Property] Grid for fine-tuning small doses (Range: 0 ~ 1)
+  SMALL_DOSE_GRID: [0.25, 0.33, 0.5, 0.66, 0.75],
+
+  // [Method] Base dosing Calculation
+  _calcMg: function(wt, dose, max) {
+    let v = wt * dose;
+    return max && v > max ? max : v;
+  },
+
+  // [Method] Snap to Grid (BW Mode only)
+  // Rounds values to clinically practical increments
+  snapGrid: function(val) {
+    if (val <= 0) return 0;
+    // Rule A: Dose >= 1 (Round to nearest 0.5)
+    if (val >= 1) {
+      return Math.round(val * 2) / 2;
+    }
+    // Rule B: Dose < 1 (Use fine-tuning grid)
+    if (val < 0.05) return 0;
+    if (val > 0.95) return 1;
+
+    const grid = this.SMALL_DOSE_GRID;
+    let closest = grid[0];
+    let minDiff = Math.abs(val - grid[0]);
+
+    for (let i = 1; i < grid.length; i++) {
+      const diff = Math.abs(val - grid[i]);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = grid[i];
+      }
+    }
+    return closest;
+  },
+
+  // [Method] Smart Search (BW Mode only)
+  // Find an "easy-to-administer" dose within the calculated range
+  findSmartTablet: function(minRaw, maxRaw) {
+    if (minRaw > maxRaw) [minRaw, maxRaw] = [maxRaw, minRaw];
+
+    // 1. Priority: Find Integer (Whole tablet)
+    const startInt = Math.ceil(minRaw);
+    if (startInt <= maxRaw) return startInt;
+
+    // 2. Secondary: Find Half-tablet (0.5 increments)
+    const startHalf = Math.ceil(minRaw * 2) / 2;
+    if (startHalf <= maxRaw && startHalf % 1 !== 0) return startHalf;
+
+    // 3. Tertiary: Find special fractional dose (only if base is 0)
+    const intBase = Math.floor(minRaw);
+    if (intBase === 0) {
+      for (let dec of this.SMALL_DOSE_GRID) {
+        if (dec >= minRaw && dec <= maxRaw) return dec;
+      }
+    }
+    return null;
+  },
+
+  // [Main Function] Calculate Final Result
+  getResult: function(item, weight, age, ctxRule = null) {
+    const fallback = { dose: "-", unit: "", freq: "" };
+    if (!item) return fallback;
+
+    const parent = item.type === "generic" ? item : item.parent;
+    const rules = parent.rules || [];
+    let rule = ctxRule;
+
+    // Auto-select rule based on Age if not provided
+    if (!rule) {
+      if (age > 0) {
+        rule = rules.find((r) => age >= r.min_age && age <= r.max_age);
+      }
+      if (!rule) rule = rules[0];
+    }
+
+    if (!rule) return { dose: "No Data", unit: "", freq: "" };
+    const freq = rule.freq || "";
+
+    // MODE A: Fix Dosage
+    if (rule.calc_mode === "fix") {
+      if (age >= 1 && age <= 18 && (age < rule.min_age || age > rule.max_age)) {
+        return { dose: `<span class="text-gray-300 text-sm line-through">Age N/A</span>`, unit: "", freq: "-" };
+      }
+      if ((age < 1 || age > 18) && (rule.min_age > 0 || rule.max_age <= 18)) {
+        return { dose: `<span class="text-blue-400 text-sm font-bold">Input Age</span>`, unit: "", freq: "-" };
+      }
+
+      let val = rule.dose_min;
+      if (item.type === "generic") return { dose: `${val}`, unit: rule.unit, freq: freq };
+      if (rule.unit === item.dispense_unit) return { dose: `${val}`, unit: item.dispense_unit, freq: freq };
+
+      // Unit Conversion (mg to unit)
+      if (rule.unit === "mg" && item.calc_concentration > 0) {
+        let finalVal = val / item.calc_concentration;
+        const displayVal = item.dispense_unit === "mL"
+          ? parseFloat(finalVal.toFixed(1))
+          : parseFloat(finalVal.toFixed(2));
+        return { dose: `${displayVal}`, unit: item.dispense_unit, freq: freq };
+      }
+      return { dose: `${val}`, unit: rule.unit, freq: freq };
+    }
+
+    // MODE B: BW Calculation (only for >=6kg)
+    if (rule.calc_mode === "BW") {
+      if (!weight || weight < 6) {
+        return { dose: `<span class="text-blue-400 text-sm font-bold">Input BW</span>`, unit: "", freq: "-" };
+      }
+
+      const absMax = rule.max_s_dose || 9999;
+      let minMg = this._calcMg(weight, rule.dose_min, absMax);
+      let maxMg = this._calcMg(weight, rule.dose_max, absMax);
+
+      // Generic: Display range
+      if (item.type === "generic") {
+        minMg = Math.round(minMg);
+        maxMg = Math.round(maxMg);
+        return { dose: minMg === maxMg ? `${minMg}` : `${minMg}-${maxMg}`, unit: "mg", freq: freq };
+      }
+
+      // Trade Name: Calculate specific amount
+      const conc = item.calc_concentration;
+      if (!conc || conc <= 0) return { dose: "?", unit: "", freq: freq };
+
+      const minRaw = minMg / conc;
+      const maxRaw = maxMg / conc;
+      const unit = item.dispense_unit;
+
+      // 1. Liquid Form (mL); Smart Rounding
+      if (unit === "mL") {
+        let v1, v2;
+        if (minRaw < 1) v1 = Math.ceil(minRaw * 10) / 10;
+        else if (minRaw < 10) v1 = Math.ceil(minRaw * 2) / 2;
+        else v1 = Math.ceil(minRaw);
+
+        if (maxRaw < 1) v2 = Math.floor(maxRaw * 10) / 10;
+        else if (maxRaw < 10) v2 = Math.floor(maxRaw * 2) / 2;
+        else v2 = Math.floor(maxRaw);
+
+        if (v1 > v2) {
+          return { dose: `${minRaw.toFixed(1)}-${maxRaw.toFixed(1)}`, unit: "mL", freq: freq };
+        }
+        return { dose: `${v1}`, unit: "mL", freq: freq };
+      }
+
+      // 2. Solid Form 
+      if (unit !== "mL") {
+        // Safety Check: Dose too small to split (< 0.22 tab)
+        if (maxRaw < 0.22) {
+          return { dose: `<span class="text-red-500 font-bold text-xs leading-tight block whitespace-normal">Consider changing<br>medication</span>`, unit: "", freq: "" };
+        }
+
+        // Priority: Smart Single Dose (Integer or Half)
+        const smartSingle = this.findSmartTablet(minRaw, maxRaw);
+        if (smartSingle !== null) {
+          return { dose: `${smartSingle}`, unit: unit, freq: freq };
+        }
+
+        // Fallback: Snap to nearest grid
+        const sMin = this.snapGrid(minRaw);
+        const sMax = this.snapGrid(maxRaw);
+
+        // [Safety] Cap at Maximum calculated dose
+        const finalDose = sMin > sMax ? sMax : sMin;
+        return { dose: `${finalDose}`, unit: unit, freq: freq };
+      }
+    }
+    return fallback;
+  }
+};
+
+// ==========================================
+// 5. STATE MANAGEMENT
+// ==========================================
+const State = {
+  // Application State
+  inputs: { weight: 0, age: 0, search: "" },
+  selected: [],
+  slots: { A: [], B: [], C: [], D: [] },
+  currentTab: "drug",
+  expandedClasses: new Set(),
+  isAlertOpen: false,
+
+  // 1. Initialize State (Hydration)
+  // Loads persisted data from LocalStorage on startup
+  init() {
+    try {
+      const saved = localStorage.getItem("pediatric_slots");
+      if (saved) this.slots = JSON.parse(saved);
+    } catch (e) {
+      console.error("Failed to load slots", e);
+    }
+  },
+
+  // 2. Selection Mutators
+  toggleItem(key) {
+    const idx = this.selected.findIndex((i) => i.uniqueKey === key);
+    if (idx > -1) {
+      this.selected.splice(idx, 1);
+    } else {
+      const item = DB.get(key);
+      if (item) this.selected.push(item);
+    }
+    Render.updateAll();
+  },
+
+  removeItem(key) {
+    this.selected = this.selected.filter((i) => i.uniqueKey !== key);
+    Render.updateAll();
+  },
+
+  clearAll() {
+    this.selected = [];
+    Render.updateAll();
+  },
+
+  // 3. Slot Management (Persistence)
+  loadSlot(id) {
+    const keys = this.slots[id];
+    if (!keys || keys.length === 0) return alert(`Slot ${id} is empty!`);
+    keys.forEach((k) => {
+      const item = DB.get(k);
+      // Logic: Merge strategy - Avoid adding duplicates
+      if (item && !this.selected.some((s) => s.uniqueKey === k)) {
+        this.selected.push(item);
+      }
+    });
+    Render.updateAll();
+  },
+
+  saveSlot(id) {
+    if (this.selected.length === 0) return alert("No drugs selected to save!");
+    
+    // Optimization: Store only IDs (Reference) instead of full objects
+    if (confirm(`Save as Slot ${id}?`)) {
+      try {
+        this.slots[id] = this.selected.map((i) => i.uniqueKey);
+        localStorage.setItem("pediatric_slots", JSON.stringify(this.slots));
+        Render.updateSlotsUI();
+      } catch (e) {
+        alert("Storage full or disabled! Cannot save.");
+        console.error(e);
+      }
+    }
+  },
+
+  // 4. Drag & Drop Reordering
+  moveItem(oldIndex, newIndex) {
+    const [removed] = this.selected.splice(oldIndex, 1);
+    this.selected.splice(newIndex, 0, removed);
+  }
+};
+
+State.init();
+
+// ==========================================
+// 6. RENDER & UI LOGIC
+// ==========================================
+const Render = {
+  // A. List View Rendering (Left Panel)
+  list: () => {
+    const container = document.getElementById("list-container");
+    if (!container) return;
+
+    const rawItems = DB.search(State.inputs.search);
+    const filteredItems = rawItems.filter((i) => {
+      if (i.type === "generic") {
+        if (i.isOrderable === false) return false;
+      }
+      return true;
+    });
+
+    // Helper: Generate HTML for a single list item
+    const createItemHtml = (i) => {
+      const isChecked = State.selected.some((s) => s.uniqueKey === i.uniqueKey);
+      const typeLabel = i.type === "trade" && i.tradeType ? DrugIcons.getHtml(i.tradeType) : "";
+      
+      let strengthHtml = "";
+      if (i.type === "trade" && i.strengthNum) {
+        const unitHtml = i.strengthUnit ? `<span class="text-[10px] leading-none text-gray-800 ml-0.5">${Utils.escape(i.strengthUnit)}</span>` : "";
+        strengthHtml = `<span class="text-xs text-gray-800 ml-1.5 whitespace-nowrap">${Utils.escape(i.strengthNum)}${unitHtml}</span>`;
+      }
+
+      let inlineInfoHtml = "";
+      let blockInfoHtml = "";
+
+      if (i.type === "generic") {
+        inlineInfoHtml = `<span class="ml-2 px-0.5 rounded bg-gray-100 text-gray-500 text-[7px] border border-gray-200 font-medium whitespace-nowrap leading-none translate-y-[-1px]">Generic</span>`;
+      } else {
+        blockInfoHtml = `<div class="-mt-0.5 leading-none"><span class="block pl-4 text-[10px] text-gray-400 whitespace-normal break-words">(${Utils.escape(i.sub)})</span></div>`;
+      }
+
+      return `
+            <div onclick="State.toggleItem('${i.uniqueKey}')" class="flex items-center justify-between py-2 px-2 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors group">
+                <div class="flex items-center w-full overflow-hidden">
+                    <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 mr-1 pointer-events-none shrink-0 transition-transform active:scale-90" ${isChecked ? "checked" : ""}>
+                    <div class="flex flex-col w-full min-w-0">
+                          <div class="flex items-baseline flex-wrap">
+                            ${typeLabel}
+                            <span class="pl-1 text-gray-800 font-bold text-sm">
+                                ${Utils.escape(i.label)}
+                            </span>
+                            ${strengthHtml}
+                            ${inlineInfoHtml} 
+                          </div>
+                          ${blockInfoHtml} 
+                    </div>
+                </div>
+            </div>`;
+    };
+
+    // Case 1: Drug Tab (Flat List)
+    if (State.currentTab === "drug") {
+      if (filteredItems.length === 0) {
+        container.innerHTML = `<div class="flex flex-col items-center justify-center h-40 text-gray-400 text-sm"><svg class="w-8 h-8 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>No matches found</div>`;
+        return;
+      }
+      container.innerHTML = filteredItems.map(createItemHtml).join("");
+      return;
+    }
+
+    // Case 2: Class Tab (Grouped List)
+    if (State.currentTab === "class") {
+      const groups = {};
+      filteredItems.forEach((item) => {
+        const cls = item.classType || "Others";
+        if (!groups[cls]) groups[cls] = [];
+        groups[cls].push(item);
+      });
+      const sortedClasses = Object.keys(groups).sort();
+
+      if (sortedClasses.length === 0) {
+        container.innerHTML = `<div class="flex flex-col items-center justify-center h-40 text-gray-400 text-sm"><svg class="w-8 h-8 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>No matches found</div>`;
+        return;
+      }
+
+      container.innerHTML = sortedClasses.map((clsName) => {
+        const groupItems = groups[clsName];
+        const isOpen = State.expandedClasses.has(clsName) ? "open" : "";
+        const itemRows = groupItems.map(createItemHtml).join("");
+
+        return `
+                <details class="border-b border-gray-200 bg-white group" ${isOpen} ontoggle="toggleClassState('${Utils.escape(clsName)}', this.open)">
+                    <summary class="flex justify-between items-center py-1.5 px-3 bg-gray-50 hover:bg-gray-100 cursor-pointer list-none select-none transition-colors">
+                        <span class="font-bold text-sm text-gray-700 flex items-center gap-2">
+                           <span class="w-1 h-4 bg-purple-500 rounded-full inline-block"></span>
+                           ${Utils.escape(clsName)}
+                           <span class="text-xs text-gray-400 font-normal ml-1">(${groupItems.length})</span>
+                        </span>
+                        <svg class="w-4 h-4 text-gray-400 transition-transform duration-200 group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </summary>
+                    <div class="bg-white border-t border-gray-100">
+                        ${itemRows}
+                    </div>
+                </details>`;
+      }).join("");
+    }
+  },
+
+  // B. Result Table Rendering (Right Panel)
+  table: () => {
+    const tbody = document.getElementById("result-body");
+    const emptyMsg = document.getElementById("empty-msg");
+    const clearBtn = document.getElementById("btn-clear-all");
+    
+    if (!tbody) return;
+
+    // Handle Empty State
+    if (State.selected.length === 0) {
+      tbody.innerHTML = "";
+      if (emptyMsg) emptyMsg.style.display = "flex";
+      if (clearBtn) clearBtn.classList.add("hidden");
+      return;
+    }
+    if (emptyMsg) emptyMsg.style.display = "none";
+    if (clearBtn) clearBtn.classList.remove("hidden");
+
+    const ingredientMap = Utils.getIngredientMap(State.selected);
+
+    tbody.innerHTML = State.selected.map((item, index) => {
+        const parent = item.type === "generic" ? item : item.parent;
+        const options = parent.rules || [];
+        const currentAge = State.inputs.age;
+
+      // Auto-match rule based on age  
+      let matchedOption = null;
+        if (options.length > 0 && currentAge >= 1) {
+          matchedOption = options.find((r) => currentAge >= r.min_age && currentAge <= r.max_age);
+        }
+
+        const distinctIndications = [...new Set(options.map((r) => r.indication))];
+        const showAsMulti = distinctIndications.length > 1;
+
+        const parentName = item.type === "generic" ? item.generic_name : item.parent.generic_name;
+        const subTextHtml = item.type === "trade" 
+            ? `<span class="block leading-none text-[10px] text-gray-400 pl-4 -mt-0.5 whitespace-normal break-words">(${Utils.escape(parentName)})</span>`
+            : "";
+
+        const typeLabel = item.type === "trade" && item.tradeType ? DrugIcons.getHtml(item.tradeType) : "";
+
+        // Duplicate Warning Logic
+        let currentIngs = item.composition || [];
+        const dupIngredients = currentIngs.filter(
+          (ing) => ingredientMap[ing] && ingredientMap[ing].length > 1
+        );
+
+        const tooltipText = dupIngredients.map(ing => {
+            const sources = ingredientMap[ing].map(s => s.name).join(", ");
+            return `${ing}: ${sources}`;
+        }).join("\n");
+
+        const alertIconHtml = dupIngredients.length > 0
+            ? `<div class="mr-1 shrink-0 cursor-help" title="Duplicate:\n${Utils.escape(tooltipText)}">
+                 ${DrugIcons.alert}
+               </div>`
+            : "";
+
+        let strengthHtml = "";
+        if (item.type === "trade" && item.strengthNum) {
+          const unitHtml = item.strengthUnit ? `<span class="text-[10px] leading-none text-gray-800 ml-0.5">${Utils.escape(item.strengthUnit)}</span>` : "";
+          strengthHtml = `<span class="text-xs text-gray-800 ml-1.5 whitespace-nowrap">${item.strengthNum}${unitHtml}</span>`;
+        }
+
+      
+        // Mode 1: Single Line Display (Standard)
+        if (!showAsMulti) {
+          const result = Calculator.getResult(item, State.inputs.weight, State.inputs.age, matchedOption);
+          return `
+          <tbody class="draggable-item group select-none" data-id="${item.uniqueKey}">
+              <tr class="relative group hover:bg-gray-50 transition-colors" style="z-index: ${100 - index};">
+                  <td class="w-px pl-0 py-1.5 align-top">
+                      <button onclick="State.removeItem('${item.uniqueKey}')" class="p-0.5 mt-0.5 text-gray-200 hover:text-stone-600 transition-colors">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                      </button>
+                  </td>
+                  <td class="py-1.5 align-baseline max-w-0 w-full"> 
+                      <div class="flex items-start">
+                          ${alertIconHtml} 
+                          <div class="flex flex-col w-full min-w-0">
+                              <div class="flex items-baseline flex-nowrap overflow-hidden pr-2">
+                                  ${typeLabel} 
+                                  <span class="pl-0.5 text-gray-800 font-bold text-base truncate">${Utils.escape(item.label)}</span>
+                                  <span class="whitespace-nowrap">${strengthHtml}</span>
+                              </div>
+                              ${subTextHtml}
+                          </div>
+                      </div>
+                  </td>
+                  <td class="w-28 py-1.5 align-baseline text-right pr-0.5">
+                      <div class="flex justify-end items-baseline whitespace-nowrap leading-tight">
+                          <span class="text-blue-600 font-bold text-base">${result.dose}</span>
+                          ${result.unit ? `<span class="text-xs text-gray-500 font-medium ml-0.5">${result.unit}</span>` : ""}
+                      </div>
+                  </td>
+                  <td class="w-24 py-1.5 align-baseline text-center text-base text-blue-600 font-bold whitespace-nowrap pr-1">
+                      ${result.freq}
+                  </td>
+              </tr>
+          </tbody>`;
+        }
+
+        // Mode 2: Multi-Option Display (Tree diagram)
+        const subRowsHtml = options.map((opt, idx, arr) => {
+            const res = Calculator.getResult(item, State.inputs.weight, State.inputs.age, opt);
+            const isLast = idx === arr.length - 1;
+            return `
+            <tr class="relative">
+                <td class="w-px pl-0 py-0.5 align-top relative">
+                    <div class="absolute left-0 top-0 w-px bg-gray-300 ${isLast ? 'h-1/2' : 'h-full'}"></div>
+                    <div class="absolute left-0 top-1/2 w-2 h-px bg-gray-300"></div>
+                </td>
+                <td class="py-0.5 pl-4 align-baseline max-w-0 w-full">
+                    <div class="flex items-center">
+                        <div class="text-sm text-gray-700 font-medium truncate">${Utils.escape(opt.indication)}</div>
+                    </div>
+                </td>
+                <td class="w-28 py-0.5 align-baseline text-right pr-0.5">
+                    <div class="flex justify-end items-baseline whitespace-nowrap leading-tight">
+                        <span class="text-blue-600 font-bold text-base">${res.dose}</span>
+                        ${res.unit ? `<span class="text-xs text-gray-500 font-medium ml-0.5">${res.unit}</span>` : ""}
+                    </div>
+                </td>
+                <td class="w-24 py-0.5 align-baseline text-center text-base text-blue-600 font-bold whitespace-nowrap pr-1">
+                    ${res.freq}
+                </td>
+            </tr>`;
+        }).join("");
+
+        const expandRowId = `expand-${item.uniqueKey}`;
+        const iconId = `icon-${item.uniqueKey}`;
+
+        return `
+          <tbody class="draggable-item group select-none" data-id="${item.uniqueKey}">
+              <tr class="relative cursor-pointer group-hover:bg-gray-50 transition-colors" 
+                  style="z-index: ${100 - index};"
+                  onclick="toggleSubRow('${expandRowId}', '${iconId}')">
+                  <td class="w-px pl-0 py-1.5 align-top" onclick="event.stopPropagation()">
+                      <button onclick="State.removeItem('${item.uniqueKey}')" class="p-0.5 mt-0.5 text-gray-200 hover:text-stone-600 transition-colors">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                      </button>
+                  </td>
+                  <td class="py-1.5 align-baseline max-w-0 w-full"> 
+                      <div class="flex items-start">
+                          ${alertIconHtml} 
+                          <div class="flex flex-col w-full min-w-0">
+                              <div class="flex items-baseline flex-nowrap overflow-hidden pr-2">
+                                  ${typeLabel} 
+                                  <span class="pl-0.5 text-gray-800 font-bold text-base truncate">${Utils.escape(item.label)}</span>
+                                  <span class="whitespace-nowrap">${strengthHtml}</span>
+                              </div>
+                              ${subTextHtml}
+                          </div>
+                      </div>
+                  </td>
+                  <td class="w-28 py-1.5 align-baseline pt-2 pr-1 relative" colspan="2">
+                      <div class="flex justify-end items-center gap-1 pointer-events-none">
+                          <svg id="${iconId}" class="w-4 h-4 text-gray-200 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                          </svg>
+                      </div>
+                  </td>
+              </tr>
+              <tr id="${expandRowId}" class="group-hover:bg-gray-50 transition-colors">
+                  <td colspan="4" class="p-0">
+                      <div class="pl-11 py-0.5 relative">
+                          <div class="absolute left-11 top-0 bottom-6 w-px bg-gray-300"></div>
+                          <div class="rounded-md overflow-hidden relative z-10">
+                              <table class="w-full border-collapse">
+                                  <tbody>${subRowsHtml}</tbody>
+                              </table>
+                          </div>
+                      </div>
+                  </td>
+              </tr>
+          </tbody>`;
+      }).join("");
+
+    Render.initSortable();
+  },
+
+  // C. Alert Box Rendering
+  warnings: () => {
+    const box = document.getElementById("alert-box");
+    const toggleBtn = document.getElementById("btn-alert-toggle");
+    if (!box || !toggleBtn) return;
+
+    const ingredientMap = Utils.getIngredientMap(State.selected);
+    
+    // Filter ingredients with more than 1 source
+    const warns = Object.entries(ingredientMap).filter(
+      ([ingName, sources]) => sources.length > 1
+    );
+
+    if (warns.length === 0) {
+      box.classList.add("hidden");
+      toggleBtn.classList.add("hidden");
+      State.isAlertOpen = false;
+      return;
+    }
+
+    toggleBtn.classList.remove("hidden");
+    toggleBtn.innerHTML = DrugIcons.alert;
+
+    if (!State.isAlertOpen) {
+      box.classList.add("hidden");
+      return;
+    }
+
+    const itemsHtml = warns
+      .map(([ingName, sources]) => {
+         const names = sources.map(s => s.name).join(", ");
+         return `<li>Duplicate: <b>${Utils.escape(ingName)}</b> <span class="text-gray-500">[${names}]</span></li>`;
+      })
+      .join("");
+
+    box.innerHTML = `<div class="flex items-start">
+                        <div class="w-4 h-4 mr-2 mt-0.5 shrink-0 text-red-500">${DrugIcons.alert}</div>
+                        <div>
+                            <h3 class="text-xs font-bold text-red-800 mb-1">Duplicate Components (${warns.length})</h3>
+                            <ul class="text-xs text-red-700 list-disc list-inside space-y-0.5">${itemsHtml}</ul>
+                        </div>
+                     </div>`;
+    box.classList.remove("hidden");
+  },
+
+  // D. UI Helpers
+  updateSlotsUI: () => {
+    CONFIG.SLOTS.forEach((id) => {
+      const btn = document.getElementById(`btn-set-${id}`);
+      if (!btn) return;
+      const hasData = State.slots[id] && State.slots[id].length > 0;
+      if (hasData) btn.classList.add("slot-filled");
+      else btn.classList.remove("slot-filled");
+    });
+  },
+
+  sortableInstance: null,
+  initSortable: () => {
+    const el = document.getElementById("result-body");
+    if (!el) return;
+    if (Render.sortableInstance) Render.sortableInstance.destroy();
+    
+    // SortableJS Configuration
+    Render.sortableInstance = Sortable.create(el, {
+      animation: 150,
+      delay: 300,
+      delayOnTouchOnly: true,
+      ghostClass: "sortable-ghost",
+      chosenClass: "sortable-chosen",
+      draggable: "tbody.draggable-item",
+      handle: "tr:first-child",
+      onEnd: function(evt) {
+        if (evt.oldIndex !== evt.newIndex) State.moveItem(evt.oldIndex, evt.newIndex);
+      },
+    });
+  },
+
+  updateAll: () => {
+    Render.list();
+    Render.table();
+    Render.warnings();
+  },
+};
+
+// ==========================================
+// 7. GLOBAL EVENT HANDLERS (Exposed to Window)
+// ==========================================
+
+// UI: Update the visual state of the Toggle Switch (Drug vs Class)
+window.updateModeBtnUI = () => {
+  const track = document.getElementById("mode-switch-track");
+  const slider = document.getElementById("toggle-slider");
+  const iconDrug = document.getElementById("knob-icon-drug");
+  const iconClass = document.getElementById("knob-icon-class");
+
+  if (!track || !slider || !iconDrug || !iconClass) return;
+
+  if (State.currentTab === "drug") {
+    slider.style.transform = "translateX(0)";
+    track.classList.add("bg-blue-200");
+    track.classList.remove("bg-purple-200");
+    iconDrug.classList.remove("opacity-0");
+    iconDrug.classList.add("opacity-100");
+    iconClass.classList.remove("opacity-100");
+    iconClass.classList.add("opacity-0");
+  } else {
+    slider.style.transform = "translateX(calc(100% + 4px))";
+    track.classList.remove("bg-blue-200");
+    track.classList.add("bg-purple-200");
+    iconDrug.classList.remove("opacity-100");
+    iconDrug.classList.add("opacity-0");
+    iconClass.classList.remove("opacity-0");
+    iconClass.classList.add("opacity-100");
+  }
+};
+
+window.toggleSearchMode = () => {
+  State.currentTab = State.currentTab === "drug" ? "class" : "drug";
+  updateModeBtnUI();
+  Render.list();
+  // Reset scroll position on tab switch
+  const container = document.getElementById("list-container");
+  if (container) container.scrollTop = 0;
+};
+
+window.toggleClassState = (clsName, isOpen) => {
+  if (isOpen) State.expandedClasses.add(clsName);
+  else State.expandedClasses.delete(clsName);
+};
+
+window.handleSearch = (val) => {
+  State.inputs.search = val.trim();
+  const clearBtn = document.getElementById("btn-clear-search");
+  
+  // Toggle Clear 'X' button visibility
+  if (clearBtn) {
+    if (val.length > 0) clearBtn.classList.remove("hidden");
+    else clearBtn.classList.add("hidden");
+  }
+  Render.list();
+  const container = document.getElementById("list-container");
+  if (container) container.scrollTop = 0;
+};
+
+window.clearSearch = () => {
+  const input = document.getElementById("search-input");
+  if (input) {
+    input.value = "";
+    input.focus();
+    window.handleSearch("");
+  }
+};
+
+// Bridge functions to State methods
+window.loadSet = (id) => State.loadSlot(id);
+window.saveToSet = (id) => State.saveSlot(id);
+window.toggleItem = (key) => State.toggleItem(key);
+window.removeItem = (key) => State.removeItem(key);
+window.clearAllDrugs = () => {
+  State.clearAll();
+  
+  // [UX Fix] Force close menus to prevent sticky state
+  // Reset toolbar stacking context
+  document.getElementById("menu-load")?.classList.add("hidden");
+  document.getElementById("menu-save")?.classList.add("hidden");
+  const toolbar = document.getElementById("result-toolbar");
+  if (toolbar) toolbar.style.zIndex = "";
+};
+window.toggleAlert = () => {
+  State.isAlertOpen = !State.isAlertOpen;
+  Render.warnings();
+  
+  // [UX Consistency] Also close menus when toggling alert
+  document.getElementById("menu-load")?.classList.add("hidden");
+  document.getElementById("menu-save")?.classList.add("hidden");
+  const toolbar = document.getElementById("result-toolbar");
+  if (toolbar) toolbar.style.zIndex = "";
+};
+
+window.toggleSubRow = (id, iconId) => {
+  const row = document.getElementById(id);
+  const icon = document.getElementById(iconId);
+  if (row) {
+    const isHidden = row.classList.contains('hidden');
+    if (isHidden) {
+      row.classList.remove('hidden');
+      if (icon) icon.style.transform = 'rotate(180deg)';
+    } else {
+      row.classList.add('hidden');
+      if (icon) icon.style.transform = 'rotate(0deg)';
+    }
+  }
+};
+
+// Dropdown Menu Logic: Close the other menu if open (Mutual Exclusion)
+window.toggleLoadMenu = () => {
+  const menu = document.getElementById("menu-load");
+  const other = document.getElementById("menu-save");
+  const toolbar = document.getElementById("result-toolbar");
+  if (other) other.classList.add("hidden");
+  if (menu) {
+    menu.classList.toggle("hidden");
+    const isOpen = !menu.classList.contains("hidden");
+    // Raise Z-Index so menu floats above content
+    if (toolbar) {
+      toolbar.style.zIndex = isOpen ? "200" : "";
+    }
+  }
+};
+
+window.toggleSaveMenu = () => {
+  const menu = document.getElementById("menu-save");
+  const other = document.getElementById("menu-load");
+  const toolbar = document.getElementById("result-toolbar");
+  if (other) other.classList.add("hidden"); 
+  if (menu) {
+    menu.classList.toggle("hidden");
+    const isOpen = !menu.classList.contains("hidden");
+    if (toolbar) {
+      toolbar.style.zIndex = isOpen ? "200" : "";
+    }
+  }
+};
+
+// Close menus when clicking outside
+document.addEventListener('click', (e) => {
+  const isButton = e.target.closest('button');
+  const isMenu = e.target.closest('#menu-load') || e.target.closest('#menu-save');
+  if (!isButton && !isMenu) {
+    document.getElementById("menu-load")?.classList.add("hidden");
+    document.getElementById("menu-save")?.classList.add("hidden");
+    const toolbar = document.getElementById("result-toolbar");
+    if (toolbar) toolbar.style.zIndex = "";
+  }
+});
+
+// ==========================================
+// 8. APPLICATION ENTRY POINT
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+  // DOM Elements
+  const wtInput = document.getElementById("pt-weight");
+  const ageInput = document.getElementById("pt-age");
+  const searchInput = document.getElementById("search-input");
+  const ageErrorMsg = document.getElementById("age-error-msg");
+  const wtErrorMsg = document.getElementById("weight-error-msg");
+
+  // Input Masking: Allow only numbers and one decimal point
+  const formatInputValue = (val) => {
+    val = val.replace(/[^\d.]/g, "");
+    const dots = val.split(".");
+    if (dots.length > 2) val = dots[0] + "." + dots.slice(1).join("");
+    const parts = val.split(".");
+    if (parts[0].length > 3) parts[0] = parts[0].substring(0, 3);
+    if (parts.length > 1) {
+      parts[1] = parts[1].substring(0, 1);
+      val = `${parts[0]}.${parts[1]}`;
+    } else {
+      val = parts[0];
+    }
+    return val;
+  };
+
+  // UX: Clean up input on blur (remove trailing dot)
+  const handleBlur = (e, key) => {
+    let val = e.target.value;
+    if (val.endsWith(".")) {
+      e.target.value = val.slice(0, -1);
+      State.inputs[key] = parseFloat(e.target.value) || 0;
+      Render.table();
+    }
+  };
+
+  // Visual Validation Feedback
+  const toggleErrorStyle = (inputEl, errorMsgEl, isError) => {
+    if (isError) {
+      if (errorMsgEl) errorMsgEl.classList.remove("hidden");
+      inputEl.classList.add("border-red-500", "focus:border-red-500", "focus:ring-red-500");
+      inputEl.classList.remove("border-blue-200", "focus:border-blue-500", "focus:ring-blue-500");
+    } else {
+      if (errorMsgEl) errorMsgEl.classList.add("hidden");
+      inputEl.classList.remove("border-red-500", "focus:border-red-500", "focus:ring-red-500");
+      inputEl.classList.add("border-blue-200", "focus:border-blue-500", "focus:ring-blue-500");
+    }
+  };
+
+  // ==Attach Listeners==
+  
+  if (wtInput) {
+    wtInput.addEventListener("input", (e) => {
+      const cleanVal = formatInputValue(e.target.value);
+      if (e.target.value !== cleanVal) e.target.value = cleanVal;
+      
+      const numVal = Utils.parseNum(cleanVal);
+      State.inputs.weight = numVal;
+      Render.table(); // Real-time calculation
+      
+      const hasValue = cleanVal.trim() !== "";
+      const isError = hasValue && numVal > 0 && numVal < 6; // BW >=6
+      toggleErrorStyle(wtInput, wtErrorMsg, isError);
+    });
+    wtInput.addEventListener("blur", (e) => handleBlur(e, "weight"));
+  }
+
+  if (ageInput) {
+    ageInput.addEventListener("input", (e) => {
+      const cleanVal = formatInputValue(e.target.value);
+      if (e.target.value !== cleanVal) e.target.value = cleanVal;
+      
+      const numVal = Utils.parseNum(cleanVal);
+      State.inputs.age = numVal;
+      Render.table(); // Real-time calculation
+      
+      const hasValue = cleanVal.trim() !== "";
+      const isError = hasValue && numVal > 0 && (numVal < 1 || numVal > 18); // Age 1-18
+      toggleErrorStyle(ageInput, ageErrorMsg, isError);
+    });
+    ageInput.addEventListener("blur", (e) => handleBlur(e, "age"));
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      window.handleSearch(e.target.value);
+    });
+  }
+
+  // --- Final Boot Sequence ---
+  State.init();
+  window.updateModeBtnUI();
+  Render.updateSlotsUI();
+  Render.list();
+  Render.table();
+  Render.warnings();
+
+  console.log("System Ready: Pediatric Dose Calculator (Advanced Mode)");
+});
+
 // ==========================================
 // 0. BACKUP DATA (Switch to BACKUP_DATA if fetch fails)
+//    This ensures the app works even if the GitHub network connection fails.
 // ==========================================
 const BACKUP_DATA = [
   {
@@ -2162,1119 +3283,3 @@ const BACKUP_DATA = [
   }
 ];
 
-// ==========================================
-// 1. DATA SOURCE 
-// ==========================================
-let rawData = [];
- 
-async function loadDrugData() {
-  try {
-    console.log("Attempting to fetch drugs.json...");
-    const response = await fetch('./drugs.json');
-    
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    // 1. Parse JSON response and store in variable
-    rawData = await response.json();
-    console.log('Successfully loaded data from JSON'); 
-  } catch (error) {
-    console.warn('Network/JSON fetch failed. Switching to BACKUP_DATA.', error);   
-    // 2. [Fallback] Switch to BACKUP_DATA if fetch fails
-    if (typeof BACKUP_DATA !== 'undefined') {
-        rawData = BACKUP_DATA;
-        alert("Network unstable. Using offline data mode.");
-    } else {
-        console.error("Critical: BACKUP_DATA is missing!");
-    }
-    
-  } finally {
-    // 3. Initialization: Execute regardless of data source (Fetch or Backup)
-    if (rawData && rawData.length > 0) {
-        DB.init(); 
-        Render.updateAll();
-        console.log("App initialized successfully.");
-    } else {
-        alert("Critical Error: No data available (Network & Backup both failed).");
-    }
-  }
-}
-
-loadDrugData();
-
-// ==========================================
-// 2_1 CONFIG & UTILS
-// ==========================================
-const CONFIG = {
-  SLOTS: ["A", "B", "C", "D"]
-};
-
-const Utils = {
-  // 1. Sanitize inputs to prevent Cross-Site Scripting (XSS)
-  escape: (str) => {
-    if (!str) return "";
-    return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  },
-
-  // 2. Safely parse numerical input
-  parseNum: (val) => {
-    const n = parseFloat(val);
-    return isNaN(n) ? 0 : n;
-  },
-
-  // 3. Generate Ingredient Map (Core Logic: Duplicate Detection)
-  // Transforms selected items into a map keyed by ingredient name.
-  getIngredientMap: (selectedItems) => {
-    const map = {};
-    selectedItems.forEach((item) => {
-      // Ensure composition is an array to prevent runtime errors
-      const list = item.composition || [];
-
-      // Construct display name: Trade Name (Form) Strength
-      let displayName = item.trade_name || item.generic_name;
-      
-      if (item.type === "trade") {
-        // Use standardized 'tradeType' from DB layer for consistency
-        const formStr = item.tradeType || item.form || ""; 
-        if (formStr) displayName += ` (${formStr})`;
-        
-        // Append strength info if available
-        if (item.strengthNum) displayName += ` ${item.strengthNum}${item.strengthUnit || ''}`;
-      }
-      
-      // Group by ingredient name (Key) to identify duplicates
-      list.forEach((ing) => {
-        if (!map[ing]) map[ing] = [];
-        map[ing].push({
-            id: item.uniqueKey,
-            name: displayName
-        });
-      });
-    });
-    return map;
-  }
-};
-
-// ==========================================
-// 2_2 ICON ASSETS (SVG)
-// ==========================================
-
-// Storing SVGs inline to reduce HTTP requests and improve loading performance.
-const DrugIcons = {
-  tablet: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="9" rx="10" ry="6"></ellipse><path d="M2 9 v4 A 10 6 0 0 0 22 16 v-4"></path><path d="M6 12 L18 6"></path></svg>`,
-  capsule: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g transform="rotate(-45 12 12)"><rect x="1" y="7" width="22" height="10" rx="5" ry="5"></rect><path d="M12 7v10"></path></g></svg>`,
-  bottle: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5 L7 21 L17 21 L20 5"></path><path d="M5.3 12 C 8 10, 11 14, 13 12 S 16 10, 18.7 12 L 17 21 L 7 21 Z"></path></svg>`,
-  suppository: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21 h6 Q 17 21 17 19 v-7 C 17 7 15 2 12 2 C 9 2 7 7 7 12 v7 Q 7 21 9 21 z"></path></svg>`,
-  granule: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g transform="rotate(-45 12 12)"><path d="M4 12 L4 7 L20 7 L20 17 L12 17"></path><path d="M3 17v0 M6 18v0 M1 19v0 M9 19v0 M4 20v0 M5 16v0 M8 17v0 M8 14v0 M11 13v0 M14 13v0 M17 12v0"></path></g></svg>`,
-  alert: `<svg class="w-5 h-5 text-red-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`,
-  default: `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>`,
-
-  // Generates HTML string for the icon based on drug form.
-  // Uses fuzzy matching to handle various data formats (e.g., "Syrup", "Susp").
-  getHtml: (typeStr) => {
-    if (!typeStr) return "";
-    const t = typeStr.toLowerCase().trim();
-    const safeTitle = Utils.escape(typeStr);  // Use Utils.escape for title attribute to prevent XSS
-    
-    if (t.includes("syrup") || t.includes("susp") || t.includes("sol") || t.includes("liq")) {
-      return `<span class="text-teal-500 shrink-0" title="${typeStr}">${DrugIcons.bottle}</span>`;
-    }
-    if (t.includes("cap")) {
-      return `<span class="text-indigo-500 shrink-0" title="${typeStr}">${DrugIcons.capsule}</span>`;
-    }
-    if (t.includes("tab") || t.includes("pill")) {
-      return `<span class="text-indigo-500 shrink-0" title="${typeStr}">${DrugIcons.tablet}</span>`;
-    }
-    if (t.includes("granule") || t.includes("pk") || t.includes("powd")) {
-      return `<span class="text-orange-500 shrink-0" title="${typeStr}">${DrugIcons.granule}</span>`;
-    }
-    if (t.includes("supp")) {
-      return `<span class="text-purple-500 shrink-0" title="${typeStr}">${DrugIcons.suppository}</span>`;
-    }
-    return `<span class="text-gray-400 shrink-0" title="${typeStr}">${DrugIcons.default}</span>`;
-  }
-};
-
-// ==========================================
-// 3. DATABASE CORE 
-// ==========================================
-const DB = {
-  // 1. State Definitions
-  map: new Map(),
-  searchList: [],
-
-  // 2. Init methods
-  // Transforms hierarchical rawData into linear structures for efficiency
-  init: function() {
-    this.map.clear();
-    this.searchList.length = 0;
-
-    rawData.forEach((gen) => {
-      // A. Process Generic Item
-      const genericItem = {
-        ...gen,
-        type: "generic",
-        uniqueKey: gen.generic_id,
-        label: gen.generic_name
-      };
-      
-      // Store full object in Map
-      this.map.set(gen.generic_id, genericItem);
-      
-      // Push lightweight object to searchList
-      this.searchList.push({
-        uniqueKey: gen.generic_id,
-        label: gen.generic_name,
-        sub: gen.generic_name,
-        type: "generic",
-        classType: gen.class || "Others",
-        searchStr: (gen.generic_name || "").toLowerCase(),
-        tradeType: "",
-        strengthNum: "",
-        strengthUnit: "",
-        // Default to true if is_orderable is undefined
-        isOrderable: typeof gen.is_orderable !== "undefined" ? gen.is_orderable : true,
-        isCombo: gen.composition && gen.composition.length > 1,
-        components: gen.composition || []
-      });
-
-      // B. Process Associated Products (Trade Items)
-      if (gen.products && gen.products.length > 0) {
-        gen.products.forEach((prod) => {
-          const tradeItem = {
-            ...prod,
-            type: "trade",
-            uniqueKey: prod.prod_id,
-            label: prod.trade_name,
-            tradeType: prod.form,
-            parent: genericItem, // Link to parent for accessing calculation rules
-            composition: gen.composition,
-            strengthNum: prod.strength_display,
-            strengthUnit: prod.strength_unit
-          };
-          
-          this.map.set(prod.prod_id, tradeItem); 
-          
-          this.searchList.push({ 
-            uniqueKey: prod.prod_id,
-            label: prod.trade_name,
-            sub: gen.generic_name,
-            type: "trade",
-            classType: gen.class || "Others", // Combine Trade Name and Generic Name for comprehensive search
-            searchStr: `${prod.trade_name} ${gen.generic_name}`.toLowerCase(),
-            tradeType: prod.form,
-            strengthNum: prod.strength_display,
-            strengthUnit: prod.strength_unit,
-            isCombo: prod.is_combo,
-            components: gen.composition || [],
-            parent: genericItem
-          });
-        });
-      }
-    });
-
-    // Sorting: Generics first, then alphabetical by Label
-    this.searchList.sort((a, b) => {
-      if (a.type !== b.type) return a.type === "generic" ? -1 : 1;
-      return a.label.localeCompare(b.label);
-    });
-    
-    console.log(`DB Initialized. Total items: ${this.searchList.length}`);
-  },
-
-  // 3. Retrieval Methods
-  get: function(key) {
-    return this.map.get(key); 
-  },
-
-  search: function(term) {
-    if (!term) return this.searchList; 
-    const lowerTerm = term.toLowerCase();
-    return this.searchList.filter((i) => i.searchStr.includes(lowerTerm));
-  }
-}; 
-
-// ==========================================
-// 4. CALCULATION ENGINE
-// ==========================================
-const Calculator = {
-  // [Property] Grid for fine-tuning small doses (Range: 0 ~ 1)
-  SMALL_DOSE_GRID: [0.25, 0.33, 0.5, 0.66, 0.75],
-
-  // [Method] Base dosing Calculation
-  _calcMg: function(wt, dose, max) {
-    let v = wt * dose;
-    return max && v > max ? max : v;
-  },
-
-  // [Method] Snap to Grid (BW Mode only)
-  // Rounds values to clinically practical increments
-  snapGrid: function(val) {
-    if (val <= 0) return 0;
-    // Rule A: Dose >= 1 (Round to nearest 0.5)
-    if (val >= 1) {
-      return Math.round(val * 2) / 2;
-    }
-    // Rule B: Dose < 1 (Use fine-tuning grid)
-    if (val < 0.05) return 0;
-    if (val > 0.95) return 1;
-
-    const grid = this.SMALL_DOSE_GRID;
-    let closest = grid[0];
-    let minDiff = Math.abs(val - grid[0]);
-
-    for (let i = 1; i < grid.length; i++) {
-      const diff = Math.abs(val - grid[i]);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closest = grid[i];
-      }
-    }
-    return closest;
-  },
-
-  // [Method] Smart Search (BW Mode only)
-  // Find an "easy-to-administer" dose within the calculated range
-  findSmartTablet: function(minRaw, maxRaw) {
-    if (minRaw > maxRaw) [minRaw, maxRaw] = [maxRaw, minRaw];
-
-    // 1. Priority: Find Integer (Whole tablet)
-    const startInt = Math.ceil(minRaw);
-    if (startInt <= maxRaw) return startInt;
-
-    // 2. Secondary: Find Half-tablet (0.5 increments)
-    const startHalf = Math.ceil(minRaw * 2) / 2;
-    if (startHalf <= maxRaw && startHalf % 1 !== 0) return startHalf;
-
-    // 3. Tertiary: Find special fractional dose (only if base is 0)
-    const intBase = Math.floor(minRaw);
-    if (intBase === 0) {
-      for (let dec of this.SMALL_DOSE_GRID) {
-        if (dec >= minRaw && dec <= maxRaw) return dec;
-      }
-    }
-    return null;
-  },
-
-  // [Main Function] Calculate Final Result
-  getResult: function(item, weight, age, ctxRule = null) {
-    const fallback = { dose: "-", unit: "", freq: "" };
-    if (!item) return fallback;
-
-    const parent = item.type === "generic" ? item : item.parent;
-    const rules = parent.rules || [];
-    let rule = ctxRule;
-
-    // Auto-select rule based on Age if not provided
-    if (!rule) {
-      if (age > 0) {
-        rule = rules.find((r) => age >= r.min_age && age <= r.max_age);
-      }
-      if (!rule) rule = rules[0];
-    }
-
-    if (!rule) return { dose: "No Data", unit: "", freq: "" };
-    const freq = rule.freq || "";
-
-    // MODE A: Fix Dosage
-    if (rule.calc_mode === "fix") {
-      if (age >= 1 && age <= 18 && (age < rule.min_age || age > rule.max_age)) {
-        return { dose: `<span class="text-gray-300 text-sm line-through">Age N/A</span>`, unit: "", freq: "-" };
-      }
-      if ((age < 1 || age > 18) && (rule.min_age > 0 || rule.max_age <= 18)) {
-        return { dose: `<span class="text-blue-400 text-sm font-bold">Input Age</span>`, unit: "", freq: "-" };
-      }
-
-      let val = rule.dose_min;
-      if (item.type === "generic") return { dose: `${val}`, unit: rule.unit, freq: freq };
-      if (rule.unit === item.dispense_unit) return { dose: `${val}`, unit: item.dispense_unit, freq: freq };
-
-      // Unit Conversion (mg to unit)
-      if (rule.unit === "mg" && item.calc_concentration > 0) {
-        let finalVal = val / item.calc_concentration;
-        const displayVal = item.dispense_unit === "mL"
-          ? parseFloat(finalVal.toFixed(1))
-          : parseFloat(finalVal.toFixed(2));
-        return { dose: `${displayVal}`, unit: item.dispense_unit, freq: freq };
-      }
-      return { dose: `${val}`, unit: rule.unit, freq: freq };
-    }
-
-    // MODE B: BW Calculation (only for >=6kg)
-    if (rule.calc_mode === "BW") {
-      if (!weight || weight < 6) {
-        return { dose: `<span class="text-blue-400 text-sm font-bold">Input BW</span>`, unit: "", freq: "-" };
-      }
-
-      const absMax = rule.max_s_dose || 9999;
-      let minMg = this._calcMg(weight, rule.dose_min, absMax);
-      let maxMg = this._calcMg(weight, rule.dose_max, absMax);
-
-      // Generic: Display range
-      if (item.type === "generic") {
-        minMg = Math.round(minMg);
-        maxMg = Math.round(maxMg);
-        return { dose: minMg === maxMg ? `${minMg}` : `${minMg}-${maxMg}`, unit: "mg", freq: freq };
-      }
-
-      // Trade Name: Calculate specific amount
-      const conc = item.calc_concentration;
-      if (!conc || conc <= 0) return { dose: "?", unit: "", freq: freq };
-
-      const minRaw = minMg / conc;
-      const maxRaw = maxMg / conc;
-      const unit = item.dispense_unit;
-
-      // 1. Liquid Form (mL); Smart Rounding
-      if (unit === "mL") {
-        let v1, v2;
-        if (minRaw < 1) v1 = Math.ceil(minRaw * 10) / 10;
-        else if (minRaw < 10) v1 = Math.ceil(minRaw * 2) / 2;
-        else v1 = Math.ceil(minRaw);
-
-        if (maxRaw < 1) v2 = Math.floor(maxRaw * 10) / 10;
-        else if (maxRaw < 10) v2 = Math.floor(maxRaw * 2) / 2;
-        else v2 = Math.floor(maxRaw);
-
-        if (v1 > v2) {
-          return { dose: `${minRaw.toFixed(1)}-${maxRaw.toFixed(1)}`, unit: "mL", freq: freq };
-        }
-        return { dose: `${v1}`, unit: "mL", freq: freq };
-      }
-
-      // 2. Solid Form 
-      if (unit !== "mL") {
-        // Safety Check: Dose too small to split (< 0.22 tab)
-        if (maxRaw < 0.22) {
-          return { dose: `<span class="text-red-500 font-bold text-xs leading-tight block whitespace-normal">Consider changing<br>medication</span>`, unit: "", freq: "" };
-        }
-
-        // Priority: Smart Single Dose (Integer or Half)
-        const smartSingle = this.findSmartTablet(minRaw, maxRaw);
-        if (smartSingle !== null) {
-          return { dose: `${smartSingle}`, unit: unit, freq: freq };
-        }
-
-        // Fallback: Snap to nearest grid
-        const sMin = this.snapGrid(minRaw);
-        const sMax = this.snapGrid(maxRaw);
-
-        // [Safety] Cap at Maximum calculated dose
-        const finalDose = sMin > sMax ? sMax : sMin;
-        return { dose: `${finalDose}`, unit: unit, freq: freq };
-      }
-    }
-    return fallback;
-  }
-};
-
-// ==========================================
-// 5. STATE MANAGEMENT
-// ==========================================
-const State = {
-  // Application State
-  inputs: { weight: 0, age: 0, search: "" },
-  selected: [],
-  slots: { A: [], B: [], C: [], D: [] },
-  currentTab: "drug",
-  expandedClasses: new Set(),
-  isAlertOpen: false,
-
-  // 1. Initialize State (Hydration)
-  // Loads persisted data from LocalStorage on startup
-  init() {
-    try {
-      const saved = localStorage.getItem("pediatric_slots");
-      if (saved) this.slots = JSON.parse(saved);
-    } catch (e) {
-      console.error("Failed to load slots", e);
-    }
-  },
-
-  // 2. Selection Mutators
-  toggleItem(key) {
-    const idx = this.selected.findIndex((i) => i.uniqueKey === key);
-    if (idx > -1) {
-      this.selected.splice(idx, 1);
-    } else {
-      const item = DB.get(key);
-      if (item) this.selected.push(item);
-    }
-    Render.updateAll();
-  },
-
-  removeItem(key) {
-    this.selected = this.selected.filter((i) => i.uniqueKey !== key);
-    Render.updateAll();
-  },
-
-  clearAll() {
-    this.selected = [];
-    Render.updateAll();
-  },
-
-  // 3. Slot Management (Persistence)
-  loadSlot(id) {
-    const keys = this.slots[id];
-    if (!keys || keys.length === 0) return alert(`Slot ${id} is empty!`);
-    keys.forEach((k) => {
-      const item = DB.get(k);
-      // Logic: Merge strategy - Avoid adding duplicates
-      if (item && !this.selected.some((s) => s.uniqueKey === k)) {
-        this.selected.push(item);
-      }
-    });
-    Render.updateAll();
-  },
-
-  saveSlot(id) {
-    if (this.selected.length === 0) return alert("No drugs selected to save!");
-    
-    // Optimization: Store only IDs (Reference) instead of full objects
-    if (confirm(`Save as Slot ${id}?`)) {
-      try {
-        this.slots[id] = this.selected.map((i) => i.uniqueKey);
-        localStorage.setItem("pediatric_slots", JSON.stringify(this.slots));
-        Render.updateSlotsUI();
-      } catch (e) {
-        alert("Storage full or disabled! Cannot save.");
-        console.error(e);
-      }
-    }
-  },
-
-  // 4. Drag & Drop Reordering
-  moveItem(oldIndex, newIndex) {
-    const [removed] = this.selected.splice(oldIndex, 1);
-    this.selected.splice(newIndex, 0, removed);
-  }
-};
-
-State.init();
-
-// ==========================================
-// 6. RENDER & UI LOGIC
-// ==========================================
-const Render = {
-  // A. List View Rendering (Left Panel)
-  list: () => {
-    const container = document.getElementById("list-container");
-    if (!container) return;
-
-    const rawItems = DB.search(State.inputs.search);
-    const filteredItems = rawItems.filter((i) => {
-      if (i.type === "generic") {
-        if (i.isOrderable === false) return false;
-      }
-      return true;
-    });
-
-    // Helper: Generate HTML for a single list item
-    const createItemHtml = (i) => {
-      const isChecked = State.selected.some((s) => s.uniqueKey === i.uniqueKey);
-      const typeLabel = i.type === "trade" && i.tradeType ? DrugIcons.getHtml(i.tradeType) : "";
-      
-      let strengthHtml = "";
-      if (i.type === "trade" && i.strengthNum) {
-        const unitHtml = i.strengthUnit ? `<span class="text-[10px] leading-none text-gray-800 ml-0.5">${Utils.escape(i.strengthUnit)}</span>` : "";
-        strengthHtml = `<span class="text-xs text-gray-800 ml-1.5 whitespace-nowrap">${Utils.escape(i.strengthNum)}${unitHtml}</span>`;
-      }
-
-      let inlineInfoHtml = "";
-      let blockInfoHtml = "";
-
-      if (i.type === "generic") {
-        inlineInfoHtml = `<span class="ml-2 px-0.5 rounded bg-gray-100 text-gray-500 text-[7px] border border-gray-200 font-medium whitespace-nowrap leading-none translate-y-[-1px]">Generic</span>`;
-      } else {
-        blockInfoHtml = `<div class="-mt-0.5 leading-none"><span class="block pl-4 text-[10px] text-gray-400 whitespace-normal break-words">(${Utils.escape(i.sub)})</span></div>`;
-      }
-
-      return `
-            <div onclick="State.toggleItem('${i.uniqueKey}')" class="flex items-center justify-between py-2 px-2 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors group">
-                <div class="flex items-center w-full overflow-hidden">
-                    <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 mr-1 pointer-events-none shrink-0 transition-transform active:scale-90" ${isChecked ? "checked" : ""}>
-                    <div class="flex flex-col w-full min-w-0">
-                          <div class="flex items-baseline flex-wrap">
-                            ${typeLabel}
-                            <span class="pl-1 text-gray-800 font-bold text-sm">
-                                ${Utils.escape(i.label)}
-                            </span>
-                            ${strengthHtml}
-                            ${inlineInfoHtml} 
-                          </div>
-                          ${blockInfoHtml} 
-                    </div>
-                </div>
-            </div>`;
-    };
-
-    // Case 1: Drug Tab (Flat List)
-    if (State.currentTab === "drug") {
-      if (filteredItems.length === 0) {
-        container.innerHTML = `<div class="flex flex-col items-center justify-center h-40 text-gray-400 text-sm"><svg class="w-8 h-8 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>No matches found</div>`;
-        return;
-      }
-      container.innerHTML = filteredItems.map(createItemHtml).join("");
-      return;
-    }
-
-    // Case 2: Class Tab (Grouped List)
-    if (State.currentTab === "class") {
-      const groups = {};
-      filteredItems.forEach((item) => {
-        const cls = item.classType || "Others";
-        if (!groups[cls]) groups[cls] = [];
-        groups[cls].push(item);
-      });
-      const sortedClasses = Object.keys(groups).sort();
-
-      if (sortedClasses.length === 0) {
-        container.innerHTML = `<div class="flex flex-col items-center justify-center h-40 text-gray-400 text-sm"><svg class="w-8 h-8 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>No matches found</div>`;
-        return;
-      }
-
-      container.innerHTML = sortedClasses.map((clsName) => {
-        const groupItems = groups[clsName];
-        const isOpen = State.expandedClasses.has(clsName) ? "open" : "";
-        const itemRows = groupItems.map(createItemHtml).join("");
-
-        return `
-                <details class="border-b border-gray-200 bg-white group" ${isOpen} ontoggle="toggleClassState('${Utils.escape(clsName)}', this.open)">
-                    <summary class="flex justify-between items-center py-1.5 px-3 bg-gray-50 hover:bg-gray-100 cursor-pointer list-none select-none transition-colors">
-                        <span class="font-bold text-sm text-gray-700 flex items-center gap-2">
-                           <span class="w-1 h-4 bg-purple-500 rounded-full inline-block"></span>
-                           ${Utils.escape(clsName)}
-                           <span class="text-xs text-gray-400 font-normal ml-1">(${groupItems.length})</span>
-                        </span>
-                        <svg class="w-4 h-4 text-gray-400 transition-transform duration-200 group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </summary>
-                    <div class="bg-white border-t border-gray-100">
-                        ${itemRows}
-                    </div>
-                </details>`;
-      }).join("");
-    }
-  },
-
-  // B. Result Table Rendering (Right Panel)
-  table: () => {
-    const tbody = document.getElementById("result-body");
-    const emptyMsg = document.getElementById("empty-msg");
-    const clearBtn = document.getElementById("btn-clear-all");
-    
-    if (!tbody) return;
-
-    // Handle Empty State
-    if (State.selected.length === 0) {
-      tbody.innerHTML = "";
-      if (emptyMsg) emptyMsg.style.display = "flex";
-      if (clearBtn) clearBtn.classList.add("hidden");
-      return;
-    }
-    if (emptyMsg) emptyMsg.style.display = "none";
-    if (clearBtn) clearBtn.classList.remove("hidden");
-
-    const ingredientMap = Utils.getIngredientMap(State.selected);
-
-    tbody.innerHTML = State.selected.map((item, index) => {
-        const parent = item.type === "generic" ? item : item.parent;
-        const options = parent.rules || [];
-        const currentAge = State.inputs.age;
-
-      // Auto-match rule based on age  
-      let matchedOption = null;
-        if (options.length > 0 && currentAge >= 1) {
-          matchedOption = options.find((r) => currentAge >= r.min_age && currentAge <= r.max_age);
-        }
-
-        const distinctIndications = [...new Set(options.map((r) => r.indication))];
-        const showAsMulti = distinctIndications.length > 1;
-
-        const parentName = item.type === "generic" ? item.generic_name : item.parent.generic_name;
-        const subTextHtml = item.type === "trade" 
-            ? `<span class="block leading-none text-[10px] text-gray-400 pl-4 -mt-0.5 whitespace-normal break-words">(${Utils.escape(parentName)})</span>`
-            : "";
-
-        const typeLabel = item.type === "trade" && item.tradeType ? DrugIcons.getHtml(item.tradeType) : "";
-
-        // Duplicate Warning Logic
-        let currentIngs = item.composition || [];
-        const dupIngredients = currentIngs.filter(
-          (ing) => ingredientMap[ing] && ingredientMap[ing].length > 1
-        );
-
-        const tooltipText = dupIngredients.map(ing => {
-            const sources = ingredientMap[ing].map(s => s.name).join(", ");
-            return `${ing}: ${sources}`;
-        }).join("\n");
-
-        const alertIconHtml = dupIngredients.length > 0
-            ? `<div class="mr-1 shrink-0 cursor-help" title="Duplicate:\n${Utils.escape(tooltipText)}">
-                 ${DrugIcons.alert}
-               </div>`
-            : "";
-
-        let strengthHtml = "";
-        if (item.type === "trade" && item.strengthNum) {
-          const unitHtml = item.strengthUnit ? `<span class="text-[10px] leading-none text-gray-800 ml-0.5">${Utils.escape(item.strengthUnit)}</span>` : "";
-          strengthHtml = `<span class="text-xs text-gray-800 ml-1.5 whitespace-nowrap">${item.strengthNum}${unitHtml}</span>`;
-        }
-
-      
-        // Mode 1: Single Line Display (Standard)
-        if (!showAsMulti) {
-          const result = Calculator.getResult(item, State.inputs.weight, State.inputs.age, matchedOption);
-          return `
-          <tbody class="draggable-item group select-none" data-id="${item.uniqueKey}">
-              <tr class="relative group hover:bg-gray-50 transition-colors" style="z-index: ${100 - index};">
-                  <td class="w-px pl-0 py-1.5 align-top">
-                      <button onclick="State.removeItem('${item.uniqueKey}')" class="p-0.5 mt-0.5 text-gray-200 hover:text-stone-600 transition-colors">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                      </button>
-                  </td>
-                  <td class="py-1.5 align-baseline max-w-0 w-full"> 
-                      <div class="flex items-start">
-                          ${alertIconHtml} 
-                          <div class="flex flex-col w-full min-w-0">
-                              <div class="flex items-baseline flex-nowrap overflow-hidden pr-2">
-                                  ${typeLabel} 
-                                  <span class="pl-0.5 text-gray-800 font-bold text-base truncate">${Utils.escape(item.label)}</span>
-                                  <span class="whitespace-nowrap">${strengthHtml}</span>
-                              </div>
-                              ${subTextHtml}
-                          </div>
-                      </div>
-                  </td>
-                  <td class="w-28 py-1.5 align-baseline text-right pr-0.5">
-                      <div class="flex justify-end items-baseline whitespace-nowrap leading-tight">
-                          <span class="text-blue-600 font-bold text-base">${result.dose}</span>
-                          ${result.unit ? `<span class="text-xs text-gray-500 font-medium ml-0.5">${result.unit}</span>` : ""}
-                      </div>
-                  </td>
-                  <td class="w-24 py-1.5 align-baseline text-center text-base text-blue-600 font-bold whitespace-nowrap pr-1">
-                      ${result.freq}
-                  </td>
-              </tr>
-          </tbody>`;
-        }
-
-        // Mode 2: Multi-Option Display (Tree diagram)
-        const subRowsHtml = options.map((opt, idx, arr) => {
-            const res = Calculator.getResult(item, State.inputs.weight, State.inputs.age, opt);
-            const isLast = idx === arr.length - 1;
-            return `
-            <tr class="relative">
-                <td class="w-px pl-0 py-0.5 align-top relative">
-                    <div class="absolute left-0 top-0 w-px bg-gray-300 ${isLast ? 'h-1/2' : 'h-full'}"></div>
-                    <div class="absolute left-0 top-1/2 w-2 h-px bg-gray-300"></div>
-                </td>
-                <td class="py-0.5 pl-4 align-baseline max-w-0 w-full">
-                    <div class="flex items-center">
-                        <div class="text-sm text-gray-700 font-medium truncate">${Utils.escape(opt.indication)}</div>
-                    </div>
-                </td>
-                <td class="w-28 py-0.5 align-baseline text-right pr-0.5">
-                    <div class="flex justify-end items-baseline whitespace-nowrap leading-tight">
-                        <span class="text-blue-600 font-bold text-base">${res.dose}</span>
-                        ${res.unit ? `<span class="text-xs text-gray-500 font-medium ml-0.5">${res.unit}</span>` : ""}
-                    </div>
-                </td>
-                <td class="w-24 py-0.5 align-baseline text-center text-base text-blue-600 font-bold whitespace-nowrap pr-1">
-                    ${res.freq}
-                </td>
-            </tr>`;
-        }).join("");
-
-        const expandRowId = `expand-${item.uniqueKey}`;
-        const iconId = `icon-${item.uniqueKey}`;
-
-        return `
-          <tbody class="draggable-item group select-none" data-id="${item.uniqueKey}">
-              <tr class="relative cursor-pointer group-hover:bg-gray-50 transition-colors" 
-                  style="z-index: ${100 - index};"
-                  onclick="toggleSubRow('${expandRowId}', '${iconId}')">
-                  <td class="w-px pl-0 py-1.5 align-top" onclick="event.stopPropagation()">
-                      <button onclick="State.removeItem('${item.uniqueKey}')" class="p-0.5 mt-0.5 text-gray-200 hover:text-stone-600 transition-colors">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                      </button>
-                  </td>
-                  <td class="py-1.5 align-baseline max-w-0 w-full"> 
-                      <div class="flex items-start">
-                          ${alertIconHtml} 
-                          <div class="flex flex-col w-full min-w-0">
-                              <div class="flex items-baseline flex-nowrap overflow-hidden pr-2">
-                                  ${typeLabel} 
-                                  <span class="pl-0.5 text-gray-800 font-bold text-base truncate">${Utils.escape(item.label)}</span>
-                                  <span class="whitespace-nowrap">${strengthHtml}</span>
-                              </div>
-                              ${subTextHtml}
-                          </div>
-                      </div>
-                  </td>
-                  <td class="w-28 py-1.5 align-baseline pt-2 pr-1 relative" colspan="2">
-                      <div class="flex justify-end items-center gap-1 pointer-events-none">
-                          <svg id="${iconId}" class="w-4 h-4 text-gray-200 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                          </svg>
-                      </div>
-                  </td>
-              </tr>
-              <tr id="${expandRowId}" class="group-hover:bg-gray-50 transition-colors">
-                  <td colspan="4" class="p-0">
-                      <div class="pl-11 py-0.5 relative">
-                          <div class="absolute left-11 top-0 bottom-6 w-px bg-gray-300"></div>
-                          <div class="rounded-md overflow-hidden relative z-10">
-                              <table class="w-full border-collapse">
-                                  <tbody>${subRowsHtml}</tbody>
-                              </table>
-                          </div>
-                      </div>
-                  </td>
-              </tr>
-          </tbody>`;
-      }).join("");
-
-    Render.initSortable();
-  },
-
-  // C. Alert Box Rendering
-  warnings: () => {
-    const box = document.getElementById("alert-box");
-    const toggleBtn = document.getElementById("btn-alert-toggle");
-    if (!box || !toggleBtn) return;
-
-    const ingredientMap = Utils.getIngredientMap(State.selected);
-    
-    // Filter ingredients with more than 1 source
-    const warns = Object.entries(ingredientMap).filter(
-      ([ingName, sources]) => sources.length > 1
-    );
-
-    if (warns.length === 0) {
-      box.classList.add("hidden");
-      toggleBtn.classList.add("hidden");
-      State.isAlertOpen = false;
-      return;
-    }
-
-    toggleBtn.classList.remove("hidden");
-    toggleBtn.innerHTML = DrugIcons.alert;
-
-    if (!State.isAlertOpen) {
-      box.classList.add("hidden");
-      return;
-    }
-
-    const itemsHtml = warns
-      .map(([ingName, sources]) => {
-         const names = sources.map(s => s.name).join(", ");
-         return `<li>Duplicate: <b>${Utils.escape(ingName)}</b> <span class="text-gray-500">[${names}]</span></li>`;
-      })
-      .join("");
-
-    box.innerHTML = `<div class="flex items-start">
-                        <div class="w-4 h-4 mr-2 mt-0.5 shrink-0 text-red-500">${DrugIcons.alert}</div>
-                        <div>
-                            <h3 class="text-xs font-bold text-red-800 mb-1">Duplicate Components (${warns.length})</h3>
-                            <ul class="text-xs text-red-700 list-disc list-inside space-y-0.5">${itemsHtml}</ul>
-                        </div>
-                     </div>`;
-    box.classList.remove("hidden");
-  },
-
-  // D. UI Helpers
-  updateSlotsUI: () => {
-    CONFIG.SLOTS.forEach((id) => {
-      const btn = document.getElementById(`btn-set-${id}`);
-      if (!btn) return;
-      const hasData = State.slots[id] && State.slots[id].length > 0;
-      if (hasData) btn.classList.add("slot-filled");
-      else btn.classList.remove("slot-filled");
-    });
-  },
-
-  sortableInstance: null,
-  initSortable: () => {
-    const el = document.getElementById("result-body");
-    if (!el) return;
-    if (Render.sortableInstance) Render.sortableInstance.destroy();
-    
-    // SortableJS Configuration
-    Render.sortableInstance = Sortable.create(el, {
-      animation: 150,
-      delay: 300,
-      delayOnTouchOnly: true,
-      ghostClass: "sortable-ghost",
-      chosenClass: "sortable-chosen",
-      draggable: "tbody.draggable-item",
-      handle: "tr:first-child",
-      onEnd: function(evt) {
-        if (evt.oldIndex !== evt.newIndex) State.moveItem(evt.oldIndex, evt.newIndex);
-      },
-    });
-  },
-
-  updateAll: () => {
-    Render.list();
-    Render.table();
-    Render.warnings();
-  },
-};
-
-// ==========================================
-// 7. GLOBAL EVENT HANDLERS (Exposed to Window)
-// ==========================================
-
-// UI: Update the visual state of the Toggle Switch (Drug vs Class)
-window.updateModeBtnUI = () => {
-  const track = document.getElementById("mode-switch-track");
-  const slider = document.getElementById("toggle-slider");
-  const iconDrug = document.getElementById("knob-icon-drug");
-  const iconClass = document.getElementById("knob-icon-class");
-
-  if (!track || !slider || !iconDrug || !iconClass) return;
-
-  if (State.currentTab === "drug") {
-    slider.style.transform = "translateX(0)";
-    track.classList.add("bg-blue-200");
-    track.classList.remove("bg-purple-200");
-    iconDrug.classList.remove("opacity-0");
-    iconDrug.classList.add("opacity-100");
-    iconClass.classList.remove("opacity-100");
-    iconClass.classList.add("opacity-0");
-  } else {
-    slider.style.transform = "translateX(calc(100% + 4px))";
-    track.classList.remove("bg-blue-200");
-    track.classList.add("bg-purple-200");
-    iconDrug.classList.remove("opacity-100");
-    iconDrug.classList.add("opacity-0");
-    iconClass.classList.remove("opacity-0");
-    iconClass.classList.add("opacity-100");
-  }
-};
-
-window.toggleSearchMode = () => {
-  State.currentTab = State.currentTab === "drug" ? "class" : "drug";
-  updateModeBtnUI();
-  Render.list();
-  // Reset scroll position on tab switch
-  const container = document.getElementById("list-container");
-  if (container) container.scrollTop = 0;
-};
-
-window.toggleClassState = (clsName, isOpen) => {
-  if (isOpen) State.expandedClasses.add(clsName);
-  else State.expandedClasses.delete(clsName);
-};
-
-window.handleSearch = (val) => {
-  State.inputs.search = val.trim();
-  const clearBtn = document.getElementById("btn-clear-search");
-  
-  // Toggle Clear 'X' button visibility
-  if (clearBtn) {
-    if (val.length > 0) clearBtn.classList.remove("hidden");
-    else clearBtn.classList.add("hidden");
-  }
-  Render.list();
-  const container = document.getElementById("list-container");
-  if (container) container.scrollTop = 0;
-};
-
-window.clearSearch = () => {
-  const input = document.getElementById("search-input");
-  if (input) {
-    input.value = "";
-    input.focus();
-    window.handleSearch("");
-  }
-};
-
-// Bridge functions to State methods
-window.loadSet = (id) => State.loadSlot(id);
-window.saveToSet = (id) => State.saveSlot(id);
-window.toggleItem = (key) => State.toggleItem(key);
-window.removeItem = (key) => State.removeItem(key);
-window.clearAllDrugs = () => {
-  State.clearAll();
-  
-  // [UX Fix] Force close menus to prevent sticky state
-  // Reset toolbar stacking context
-  document.getElementById("menu-load")?.classList.add("hidden");
-  document.getElementById("menu-save")?.classList.add("hidden");
-  const toolbar = document.getElementById("result-toolbar");
-  if (toolbar) toolbar.style.zIndex = "";
-};
-window.toggleAlert = () => {
-  State.isAlertOpen = !State.isAlertOpen;
-  Render.warnings();
-  
-  // [UX Consistency] Also close menus when toggling alert
-  document.getElementById("menu-load")?.classList.add("hidden");
-  document.getElementById("menu-save")?.classList.add("hidden");
-  const toolbar = document.getElementById("result-toolbar");
-  if (toolbar) toolbar.style.zIndex = "";
-};
-
-window.toggleSubRow = (id, iconId) => {
-  const row = document.getElementById(id);
-  const icon = document.getElementById(iconId);
-  if (row) {
-    const isHidden = row.classList.contains('hidden');
-    if (isHidden) {
-      row.classList.remove('hidden');
-      if (icon) icon.style.transform = 'rotate(180deg)';
-    } else {
-      row.classList.add('hidden');
-      if (icon) icon.style.transform = 'rotate(0deg)';
-    }
-  }
-};
-
-// Dropdown Menu Logic: Close the other menu if open (Mutual Exclusion)
-window.toggleLoadMenu = () => {
-  const menu = document.getElementById("menu-load");
-  const other = document.getElementById("menu-save");
-  const toolbar = document.getElementById("result-toolbar");
-  if (other) other.classList.add("hidden");
-  if (menu) {
-    menu.classList.toggle("hidden");
-    const isOpen = !menu.classList.contains("hidden");
-    // Raise Z-Index so menu floats above content
-    if (toolbar) {
-      toolbar.style.zIndex = isOpen ? "200" : "";
-    }
-  }
-};
-
-window.toggleSaveMenu = () => {
-  const menu = document.getElementById("menu-save");
-  const other = document.getElementById("menu-load");
-  const toolbar = document.getElementById("result-toolbar");
-  if (other) other.classList.add("hidden"); 
-  if (menu) {
-    menu.classList.toggle("hidden");
-    const isOpen = !menu.classList.contains("hidden");
-    if (toolbar) {
-      toolbar.style.zIndex = isOpen ? "200" : "";
-    }
-  }
-};
-
-// Close menus when clicking outside
-document.addEventListener('click', (e) => {
-  const isButton = e.target.closest('button');
-  const isMenu = e.target.closest('#menu-load') || e.target.closest('#menu-save');
-  if (!isButton && !isMenu) {
-    document.getElementById("menu-load")?.classList.add("hidden");
-    document.getElementById("menu-save")?.classList.add("hidden");
-    const toolbar = document.getElementById("result-toolbar");
-    if (toolbar) toolbar.style.zIndex = "";
-  }
-});
-
-// ==========================================
-// 8. APPLICATION ENTRY POINT
-// ==========================================
-document.addEventListener("DOMContentLoaded", () => {
-  // DOM Elements
-  const wtInput = document.getElementById("pt-weight");
-  const ageInput = document.getElementById("pt-age");
-  const searchInput = document.getElementById("search-input");
-  const ageErrorMsg = document.getElementById("age-error-msg");
-  const wtErrorMsg = document.getElementById("weight-error-msg");
-
-  // Input Masking: Allow only numbers and one decimal point
-  const formatInputValue = (val) => {
-    val = val.replace(/[^\d.]/g, "");
-    const dots = val.split(".");
-    if (dots.length > 2) val = dots[0] + "." + dots.slice(1).join("");
-    const parts = val.split(".");
-    if (parts[0].length > 3) parts[0] = parts[0].substring(0, 3);
-    if (parts.length > 1) {
-      parts[1] = parts[1].substring(0, 1);
-      val = `${parts[0]}.${parts[1]}`;
-    } else {
-      val = parts[0];
-    }
-    return val;
-  };
-
-  // UX: Clean up input on blur (remove trailing dot)
-  const handleBlur = (e, key) => {
-    let val = e.target.value;
-    if (val.endsWith(".")) {
-      e.target.value = val.slice(0, -1);
-      State.inputs[key] = parseFloat(e.target.value) || 0;
-      Render.table();
-    }
-  };
-
-  // Visual Validation Feedback
-  const toggleErrorStyle = (inputEl, errorMsgEl, isError) => {
-    if (isError) {
-      if (errorMsgEl) errorMsgEl.classList.remove("hidden");
-      inputEl.classList.add("border-red-500", "focus:border-red-500", "focus:ring-red-500");
-      inputEl.classList.remove("border-blue-200", "focus:border-blue-500", "focus:ring-blue-500");
-    } else {
-      if (errorMsgEl) errorMsgEl.classList.add("hidden");
-      inputEl.classList.remove("border-red-500", "focus:border-red-500", "focus:ring-red-500");
-      inputEl.classList.add("border-blue-200", "focus:border-blue-500", "focus:ring-blue-500");
-    }
-  };
-
-  // ==Attach Listeners==
-  
-  if (wtInput) {
-    wtInput.addEventListener("input", (e) => {
-      const cleanVal = formatInputValue(e.target.value);
-      if (e.target.value !== cleanVal) e.target.value = cleanVal;
-      
-      const numVal = Utils.parseNum(cleanVal);
-      State.inputs.weight = numVal;
-      Render.table(); // Real-time calculation
-      
-      const hasValue = cleanVal.trim() !== "";
-      const isError = hasValue && numVal > 0 && numVal < 6; // BW >=6
-      toggleErrorStyle(wtInput, wtErrorMsg, isError);
-    });
-    wtInput.addEventListener("blur", (e) => handleBlur(e, "weight"));
-  }
-
-  if (ageInput) {
-    ageInput.addEventListener("input", (e) => {
-      const cleanVal = formatInputValue(e.target.value);
-      if (e.target.value !== cleanVal) e.target.value = cleanVal;
-      
-      const numVal = Utils.parseNum(cleanVal);
-      State.inputs.age = numVal;
-      Render.table(); // Real-time calculation
-      
-      const hasValue = cleanVal.trim() !== "";
-      const isError = hasValue && numVal > 0 && (numVal < 1 || numVal > 18); // Age 1-18
-      toggleErrorStyle(ageInput, ageErrorMsg, isError);
-    });
-    ageInput.addEventListener("blur", (e) => handleBlur(e, "age"));
-  }
-
-  if (searchInput) {
-    searchInput.addEventListener("input", (e) => {
-      window.handleSearch(e.target.value);
-    });
-  }
-
-  // --- Final Boot Sequence ---
-  State.init();
-  window.updateModeBtnUI();
-  Render.updateSlotsUI();
-  Render.list();
-  Render.table();
-  Render.warnings();
-
-  console.log("System Ready: Pediatric Dose Calculator (Advanced Mode)");
-});
