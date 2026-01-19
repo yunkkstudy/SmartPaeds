@@ -42,4 +42,6 @@
 * **Tools**: SortableJS (Drag & Drop Interface)
 
 ---
+Clinical decision supporting tool for paediatric general dosing. For specific indications and neonatal use, please refer to individual guidelines or specialists.
+    </p>
 *Developed by YUN-KE LU - Pharmacist & Developer*
