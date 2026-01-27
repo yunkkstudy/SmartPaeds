@@ -1,15 +1,16 @@
 <div align="center">
 
-  <img src="demo2.gif" alt="SmartPaeds Demo" width="700" style="border-radius: 8px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1);">
+  <img src="demo2.gif" alt="SmartPaeds Demo" width="700" style="border-radius: 8px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); max-width: 100%;">
 
   <br>
 
-  [![Live Demo](https://img.shields.io/badge/Demo-Live%20App-blue?style=for-the-badge&logo=github)](https://yunkkstudy.github.io/SmartPaeds/)
+  <a href="https://yunkkstudy.github.io/SmartPaeds/">
+    <img src="https://img.shields.io/badge/Demo-Live%20App-blue?style=for-the-badge&logo=github" alt="Live Demo">
+  </a>
 
   <br>
 
   <h1 style="margin-bottom: 0px;">SmartPaeds</h1>
-  
   <h3>Paediatric Clinical Decision Support System</h3>
 
   <p>
