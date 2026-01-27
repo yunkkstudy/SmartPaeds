@@ -28,35 +28,48 @@
 
 <details>
   <summary>1. 🧠 Smart Dosing Algorithm</summary>
+  <sub><br></sub>
 
-  *   **Beyond Simple Math**: The app doesn't just calculate `5.7mL`. It snaps results to clinically practical increments `5.5mL` using a custom grid system.
-  *   **Formulation Aware**: Automatically handles rounding logic differently for **Liquid medicine (mL)** vs **Solid Dosage Forms (Tab, Cap, etc.)**.
+  > * **Beyond Simple Math**: The app doesn't just calculate `5.7mL`. It snaps results to clinically practical increments `5.5mL` using a custom grid system.
+  > * **Formulation Aware**: Automatically handles rounding logic differently for **Liquid medicine (mL)** vs **Solid Dosage Forms (Tab, Cap, etc.)**.
 </details>
 
 <details>
   <summary>2. 🛡️ Real-time Safety Auditing</summary>
+  <sub><br></sub>
 
-  *   **Duplicate Detection**: The system scans active ingredients in real-time. If you select *Anti-phen* and *Acetal* (both Acetaminophen), it instantly triggers a visual alert to prevent overdose.
-  *   **Max Dose Protection**: Hard-coded safety caps ensure calculated doses never exceed adult maximums.
+  > * **Duplicate Detection**: The system scans active ingredients in real-time. If you select *Anti-phen* and *Acetal* (both Acetaminophen), it instantly triggers a visual alert to prevent overdose.
+  > * **Max Dose Protection**: Hard-coded safety caps ensure calculated doses never exceed adult maximums.
 </details>
 
 <details>
   <summary>3. 💾 Workflow Efficiency</summary>
+  <sub><br></sub>
 
-  *   **State Management**: Utilises **LocalStorage API** to persist prescription data across browser sessions.
-  *   **Use Case**: Allows users to save frequently used drug combinations (e.g. Common Cold bundle), significantly reducing manual search time for routine cases.
+  > * **State Management**: Utilises **LocalStorage API** to persist prescription data across browser sessions.
+  > * **Use Case**: Allows users to save frequently used drug combinations (e.g. Common Cold bundle), significantly reducing manual search time for routine cases.
 </details>
 
 <details>
   <summary>4. 📱 Responsive & Resilient Architecture</summary>
+  <sub><br></sub>
 
-  *   **Adaptive Layout**: Fully responsive design ensuring a user-friendly experience on both **Desktop** and **Mobile** devices.
-  *   **Offline-First**: Implements a robust fallback mechanism. If the live JSON fetch fails, it switches to embedded `BACKUP_DATA` to guarantee 100% uptime.
+  > * **Adaptive Layout**: Fully responsive design ensuring a user-friendly experience on both **Desktop** and **Mobile** devices.
+  > * **Offline-First**: Implements a robust fallback mechanism. If the live JSON fetch fails, it switches to embedded `BACKUP_DATA` to guarantee 100% uptime.
 </details>
 
 <details>
   <summary>💻 Tech Stack</summary>
+  <sub><br></sub>
 
-  *   **Frontend**: HTML5, Tailwind CSS, JavaScript (ES6+)
-  *   **Data**: JSON (Schema-based Data Modeling)
+  > * **Frontend**: HTML5, Tailwind CSS, JavaScript
+  > * **Data**: JSON (Relational Data Mapping)
 </details>
+
+---
+
+<sub>
+  <b>⚠️ Disclaimer</b>
+  <br>
+  Clinical decision supporting tool for paediatric general dosing. For specific indications and neonatal use, please refer to individual guidelines or specialists.
+</sub>
