@@ -2,11 +2,11 @@
 
   <img src="demo2.gif" alt="SmartPaeds Demo" width="700" style="border-radius: 8px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1);">
 
-  <br><br>
+  <br>
 
   [![Live Demo](https://img.shields.io/badge/Demo-Live%20App-blue?style=for-the-badge&logo=github)](https://yunkkstudy.github.io/SmartPaeds/)
 
-  <br><br>
+  <br>
 
   <h1 style="margin-bottom: 0px;">SmartPaeds</h1>
   
