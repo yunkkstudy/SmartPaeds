@@ -1,12 +1,19 @@
 <div align="center">
-  <img src="demo2.gif" alt="SmartPaeds Demo" style="max-width: 100%;">
-  [![Live Demo](https://img.shields.io/badge/Demo-Live%20App-blue?style=for-the-badge&logo=github)](https://yunkkstudy.github.io/SmartPaeds/)
-  <h1>SmartPaeds</h1>
-  <sub><strong>Paediatric Clinical Decision Support System</strong></sub>
+  
+  <img src="demo2.gif" alt="SmartPaeds Demo" width="800">
 
   <br>
+  
+  [![Live Demo](https://img.shields.io/badge/Demo-Live%20App-blue?style=for-the-badge&logo=github)](https://yunkkstudy.github.io/SmartPaeds/)
 
-  **A fail-safe CDSS providing rapid dosage guidance for junior paediatric practitioners,<br>reducing dosing decision time by up to 90%.**
+  <br><hr>
+
+  <h1>SmartPaeds
+  <p><sub><strong>Paediatric Clinical Decision Support System</strong></sub></p>
+
+  <p align="center">
+    <strong>A fail-safe CDSS providing rapid dosage guidance for junior paediatric practitioners,<br>reducing dosing decision time by up to 90%.</strong>
+  </p>
 
 </div>
 
