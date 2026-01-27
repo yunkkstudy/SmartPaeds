@@ -1,47 +1,53 @@
 <div align="center">
-  
-<h1 align="center">
-  SmartPaeds
+  <img src="demo2.gif" alt="SmartPaeds Demo" width="600">
+  <h1>SmartPaeds</h1>
+  <sub><strong>Paediatric Clinical Decision Support System</strong></sub>
+
+  <br><br>
+
+  **A fail-safe CDSS providing rapid dosage guidance for junior paediatric practitioners,<br>reducing dosing decision time by up to 90%.**
+
   <br>
-  <sub>Paediatric Clinical Decision Support System</sub>
-</h1>
 
-**A fail-safe CDSS providing rapid dosage guidance for junior paediatric practitioners,<br>reducing dosing decision time by up to 90%.**
-
-[![Live Demo](https://img.shields.io/badge/Demo-Live%20App-blue?style=for-the-badge&logo=github)](https://yunkkstudy.github.io/SmartPaeds/)
-
-![SmartPaeds Demo](demo.gif)
-
-> *"Transforming theoretical calculations into immediately actionable clinical data."*
+  [![Live Demo](https://img.shields.io/badge/Demo-Live%20App-blue?style=for-the-badge&logo=github)](https://yunkkstudy.github.io/SmartPaeds/)
 
 </div>
 
-
+---
 
 ## 🛠 Key Features
 
-### 1. 🧠 Smart Dosing Algorithm 
-* **Beyond Simple Math**: The app doesn't just calculate `5.7mL`. It snaps results to clinically practical increments `5.5mL` using a custom grid system.
-* **Formulation Aware**: Automatically handles rounding logic differently for **Liquid medicine (mL)** vs **Solid Dosage Forms (Tab, Cap, etc.)**.
+<details>
+  <summary>1. 🧠 Smart Dosing Algorithm</summary>
 
-### 2. 🛡️ Real-time Safety Auditing
-* **Duplicate Detection**: The system scans active ingredients in real-time. If you select *Anti-phen* and *Acetal* (both Acetaminophen), it instantly triggers a visual alert to prevent overdose.
-* **Max Dose Protection**: Hard-coded safety caps ensure calculated doses never exceed adult maximums.
+  * **Beyond Simple Math**: The app doesn't just calculate `5.7mL`. It snaps results to clinically practical increments `5.5mL` using a custom grid system.
+  * **Formulation Aware**: Automatically handles rounding logic differently for **Liquid medicine (mL)** vs **Solid Dosage Forms (Tab, Cap, etc.)**.
+</details>
 
-### 3. 💾 Workflow Efficiency 
-* **State Management**: Utilises **LocalStorage API** to persist prescription data across browser sessions.
-* **Use Case**: Allows users to save frequently used drug combinations (e.g. Common Cold bundle), significantly reducing manual search time for routine cases.
+<details>
+  <summary>2. 🛡️ Real-time Safety Auditing</summary>
 
-### 4. 📱 Responsive & Resilient Architecture
-* **Adaptive Layout**: Fully responsive design ensuring a user-friendly experience on both **Desktop (landscape)** and **Mobile (portrait)** devices.
-* **Offline-First**: Implements a robust fallback mechanism. If the live JSON fetch fails, it switches to embedded `BACKUP_DATA` to guarantee 100% uptime.
+  * **Duplicate Detection**: The system scans active ingredients in real-time. If you select *Anti-phen* and *Acetal* (both Acetaminophen), it instantly triggers a visual alert to prevent overdose.
+  * **Max Dose Protection**: Hard-coded safety caps ensure calculated doses never exceed adult maximums.
+</details>
 
-## 💻 Tech Stack
-* **Frontend**: HTML5, Tailwind CSS, JavaScript
-* **Data**: JSON (Relational Data Modeling)
-* **Tools**: SortableJS (Drag & Drop Interface)
+<details>
+  <summary>3. 💾 Workflow Efficiency</summary>
 
----
-Clinical decision supporting tool for paediatric general dosing. For specific indications and neonatal use, please refer to individual guidelines or specialists.
-    </p>
-*Developed by YUN-KE LU - Pharmacist & Developer*
+  * **State Management**: Utilises **LocalStorage API** to persist prescription data across browser sessions.
+  * **Use Case**: Allows users to save frequently used drug combinations (e.g. Common Cold bundle), significantly reducing manual search time for routine cases.
+</details>
+
+<details>
+  <summary>4. 📱 Responsive & Resilient Architecture</summary>
+
+  * **Adaptive Layout**: Fully responsive design ensuring a user-friendly experience on both **Desktop** and **Mobile** devices.
+  * **Offline-First**: Implements a robust fallback mechanism. If the live JSON fetch fails, it switches to embedded `BACKUP_DATA` to guarantee 100% uptime.
+</details>
+
+<details>
+  <summary>💻 Tech Stack</summary>
+
+  * **Frontend**: HTML5, Tailwind CSS, JavaScript (ES6+)
+  * **Data**: JSON (Schema-based Data Modeling)
+</details>
