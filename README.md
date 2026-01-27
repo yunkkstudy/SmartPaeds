@@ -17,15 +17,11 @@
     reducing dosing decision time by up to <b>90%</b>.</i>
   </p>
 
-  <br>
-
   <hr width="60%" style="opacity: 0.5;">
   
   <br>
 
 </div>
-
----
 
 ## 🛠 Key Features
 
