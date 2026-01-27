@@ -9,10 +9,11 @@
   <br><hr>
 
   <h1>SmartPaeds
-  <p><sub><strong>Paediatric Clinical Decision Support System</strong></sub></p>
+  <h4>Paediatric Clinical Decision Support System</h4>
 
-  <p align="center">
-    <strong>A fail-safe CDSS providing rapid dosage guidance for junior paediatric practitioners,<br>reducing dosing decision time by up to 90%.</strong>
+  <p>
+    A fail-safe CDSS providing rapid dosage guidance for junior paediatric practitioners,<br>
+    reducing dosing decision time by up to <b>90%</b>.
   </p>
 
 </div>
