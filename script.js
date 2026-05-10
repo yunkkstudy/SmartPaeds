@@ -670,10 +670,19 @@ const Render = {
         const options = parent.rules || [];
         const currentAge = State.inputs.age;
 
-      // Auto-match rule based on age  
+      // UI 層同步更新：同時比對年齡與體重來預選正確的規則 
       let matchedOption = null;
         if (options.length > 0 && currentAge >= 1) {
-          matchedOption = options.find((r) => currentAge >= r.min_age && currentAge <= r.max_age);
+            matchedOption = options.find((r) => {
+                const ageMatch = currentAge >= r.min_age && currentAge <= r.max_age;
+          
+                // 取得體重條件
+                const minW = (r.min_wt !== null && r.min_wt !== undefined) ? r.min_wt : 0;
+                const maxW = (r.max_wt !== null && r.max_wt !== undefined) ? r.max_wt : 9999;
+                const wtMatch = State.inputs.weight > 0 ? (State.inputs.weight >= minW && State.inputs.weight <= maxW) : true;
+          
+                return ageMatch && wtMatch;
+            });
         }
 
         const distinctIndications = [...new Set(options.map((r) => r.indication))];
