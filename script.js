@@ -310,11 +310,20 @@ const Calculator = {
     let rule = ctxRule;
 
     // Auto-select rule based on Age if not provided
+    // 自動匹配邏輯：同時比對年齡與體重區間
     if (!rule) {
-      if (age > 0) {
-        rule = rules.find((r) => age >= r.min_age && age <= r.max_age);
-      }
-      if (!rule) rule = rules[0];
+      rule = rules.find((r) => {
+        // 評估年齡條件
+        const ageMatch = age > 0 ? (age >= r.min_age && age <= r.max_age) : true;
+        
+        // 評估體重條件（處理 null 值，若無限制則給予寬鬆預設值）
+        const minW = (r.min_wt !== null && r.min_wt !== undefined) ? r.min_wt : 0;
+        const maxW = (r.max_wt !== null && r.max_wt !== undefined) ? r.max_wt : 9999;
+        const wtMatch = weight > 0 ? (weight >= minW && weight <= maxW) : true;
+        
+        return ageMatch && wtMatch;
+      });
+      if (!rule) rule = rules[0]; // 若無完全符合條件的規則，安全退回第一筆
     }
 
     if (!rule) return { dose: "No Data", unit: "", freq: "" };
@@ -408,6 +417,32 @@ const Calculator = {
         return { dose: `${finalDose}`, unit: unit, freq: freq };
       }
     }
+    // MODE C: wt_fix (依體重區間給予固定劑量)
+    if (rule.calc_mode === "wt_fix") {
+      // 確保使用者有輸入體重才能進行判斷
+      if (!weight || weight <= 0) {
+        return { dose: `<span class="text-blue-400 text-sm font-bold">Input BW</span>`, unit: "", freq: "-" };
+      }
+
+      // 取出該體重區間定義的固定劑量
+      let val = rule.dose_min; 
+
+      // 若為通用名稱 (Generic) 或單位無需轉換，直接回傳數值
+      if (item.type === "generic") return { dose: `${val}`, unit: rule.unit, freq: freq };
+      if (rule.unit === item.dispense_unit) return { dose: `${val}`, unit: item.dispense_unit, freq: freq };
+
+      // 單位換算：將基礎單位 (mg/gm) 轉換為實際發藥單位 (mL/tab/cap)
+      if ((rule.unit === "mg" || rule.unit === "gm") && item.calc_concentration > 0) {
+        let finalVal = val / item.calc_concentration;
+        const displayVal = item.dispense_unit === "mL"
+          ? parseFloat(finalVal.toFixed(1))
+          : parseFloat(finalVal.toFixed(2));
+        return { dose: `${displayVal}`, unit: item.dispense_unit, freq: freq };
+      }
+      
+      return { dose: `${val}`, unit: rule.unit, freq: freq };
+    }
+   
     return fallback;
   }
 };
