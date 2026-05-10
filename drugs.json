@@ -1968,7 +1968,7 @@
         "strength_display": "3",
         "strength_unit": "gm",
         "form": "granule",
-        "calc_concentration": 1,
+        "calc_concentration": 3,
         "dispense_unit": "pk"
       }
     ]
