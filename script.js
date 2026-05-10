@@ -677,12 +677,15 @@ const Render = {
                 const ageMatch = currentAge >= r.min_age && currentAge <= r.max_age;
           
                 // 取得體重條件
-                const minW = (r.min_wt !== null && r.min_wt !== undefined) ? r.min_wt : 0;
-                const maxW = (r.max_wt !== null && r.max_wt !== undefined) ? r.max_wt : 9999;
-                const wtMatch = State.inputs.weight > 0 ? (State.inputs.weight >= minW && State.inputs.weight <= maxW) : true;
+                const currentWt = Utils.parseNum(State.inputs.weight);
+                const minW = (r.min_wt !== null && typeof r.min_wt !== 'undefined') ? r.min_wt : 0;
+                const maxW = (r.max_wt !== null && typeof r.max_wt !== 'undefined') ? r.max_wt : 9999;
+                cconst wtMatch = currentWt > 0 ? (currentWt >= minW && currentWt <= maxW) : true;
           
                 return ageMatch && wtMatch;
             });
+         
+            if (!matchedOption) matchedOption = options[0];
         }
 
         const distinctIndications = [...new Set(options.map((r) => r.indication))];
