@@ -430,7 +430,7 @@ const Calculator = {
       }
 
       // 2. 安全檢查：體重驗證
-      if (!weight || weight <= 0) {
+      if (!weight || weight < 6) {
         return { dose: `<span class="text-blue-400 text-sm font-bold">Input BW</span>`, unit: "", freq: "-" };
       }
 
