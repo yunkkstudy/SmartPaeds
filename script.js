@@ -334,7 +334,7 @@ const Calculator = {
       if (rule.unit === item.dispense_unit) return { dose: `${val}`, unit: item.dispense_unit, freq: freq };
 
       // Unit Conversion (mg to unit)
-      if (rule.unit === "mg" && item.calc_concentration > 0) {
+      if ((rule.unit === "mg" || rule.unit === "gm") && item.calc_concentration > 0) {
         let finalVal = val / item.calc_concentration;
         const displayVal = item.dispense_unit === "mL"
           ? parseFloat(finalVal.toFixed(1))
@@ -3092,7 +3092,7 @@ const BACKUP_DATA = [
         "strength_display": "3",
         "strength_unit": "gm",
         "form": "granule",
-        "calc_concentration": 1,
+        "calc_concentration": 3,
         "dispense_unit": "pk"
       }
     ]
