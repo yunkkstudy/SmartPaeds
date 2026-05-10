@@ -680,7 +680,7 @@ const Render = {
                 const currentWt = Utils.parseNum(State.inputs.weight);
                 const minW = (r.min_wt !== null && typeof r.min_wt !== 'undefined') ? r.min_wt : 0;
                 const maxW = (r.max_wt !== null && typeof r.max_wt !== 'undefined') ? r.max_wt : 9999;
-                cconst wtMatch = currentWt > 0 ? (currentWt >= minW && currentWt <= maxW) : true;
+                const wtMatch = currentWt > 0 ? (currentWt >= minW && currentWt <= maxW) : true;
           
                 return ageMatch && wtMatch;
             });
