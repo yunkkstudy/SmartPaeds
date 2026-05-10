@@ -1098,7 +1098,7 @@
         "dose_max": 0.05,
         "unit": "mg",
         "max_s_dose": 1.0,
-        "freq": "BID "
+        "freq": "BID"
       },
       {
         "rule_id": "R40",
@@ -2333,7 +2333,7 @@
         "indication": "General",
         "min_age": 1,
         "max_age": 18,
-        "min_wt": 0.0,
+        "min_wt": 6.0,
         "max_wt": 15.0,
         "calc_mode": "wt_fix",
         "dose_min": 30.0,
@@ -2412,7 +2412,7 @@
         "indication": "General",
         "min_age": 5,
         "max_age": 18,
-        "min_wt": 0.0,
+        "min_wt": 6.0,
         "max_wt": 19.99,
         "calc_mode": "wt_fix",
         "dose_min": 20.0,
