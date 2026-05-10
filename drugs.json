@@ -1894,7 +1894,7 @@
         "trade_name": "Pseu",
         "is_combo": true,
         "strength_display": "0.25/6",
-        "strength_unit": "mL",
+        "strength_unit": "mg/mL",
         "form": "soln",
         "calc_concentration": 1,
         "dispense_unit": "mL"
