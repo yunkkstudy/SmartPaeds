@@ -419,19 +419,29 @@ const Calculator = {
     }
     // MODE C: wt_fix (依體重區間給予固定劑量)
     if (rule.calc_mode === "wt_fix") {
-      // 確保使用者有輸入體重才能進行判斷
+      // 1. 安全檢查：年齡驗證 (與 MODE A 一致)
+      // 若年齡在 1-18 歲間但不在規則範圍內，顯示 Age N/A
+      if (age >= 1 && age <= 18 && (age < rule.min_age || age > rule.max_age)) {
+        return { dose: `<span class="text-gray-300 text-sm line-through">Age N/A</span>`, unit: "", freq: "-" };
+      }
+      // 若未輸入年齡 (age < 1) 且規則有明確限制，提示 Input Age
+      if ((age < 1 || age > 18) && (rule.min_age > 0 || rule.max_age <= 18)) {
+        return { dose: `<span class="text-blue-400 text-sm font-bold">Input Age</span>`, unit: "", freq: "-" };
+      }
+
+      // 2. 安全檢查：體重驗證
       if (!weight || weight <= 0) {
         return { dose: `<span class="text-blue-400 text-sm font-bold">Input BW</span>`, unit: "", freq: "-" };
       }
 
-      // 取出該體重區間定義的固定劑量
-      let val = rule.dose_min; 
+      // 3. 執行計算
+      let val = rule.dose_min;
 
-      // 若為通用名稱 (Generic) 或單位無需轉換，直接回傳數值
+      // 若為通用名稱 (Generic) 或單位無需轉換
       if (item.type === "generic") return { dose: `${val}`, unit: rule.unit, freq: freq };
       if (rule.unit === item.dispense_unit) return { dose: `${val}`, unit: item.dispense_unit, freq: freq };
 
-      // 單位換算：將基礎單位 (mg/gm) 轉換為實際發藥單位 (mL/tab/cap)
+      // 單位換算 (mg/gm -> mL/tab/cap)
       if ((rule.unit === "mg" || rule.unit === "gm") && item.calc_concentration > 0) {
         let finalVal = val / item.calc_concentration;
         const displayVal = item.dispense_unit === "mL"
